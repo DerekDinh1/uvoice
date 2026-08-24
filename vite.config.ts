@@ -8,6 +8,11 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/uvoice/' : '/',
   plugins: [react(), tailwindcss()],
+  // Transformers.js is large and only loaded on demand (dynamic import); keep it
+  // out of the dev pre-bundle so it does not slow startup or pull Node-only deps.
+  optimizeDeps: {
+    exclude: ['@huggingface/transformers'],
+  },
   test: {
     environment: 'jsdom',
     globals: true,

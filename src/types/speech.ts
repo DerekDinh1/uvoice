@@ -21,13 +21,24 @@ export interface SpeechError {
   message: string;
 }
 
+// Throwable version carrying a kind, so callers can branch on the failure.
+export class SpeechErrorException extends Error {
+  readonly kind: SpeechErrorKind;
+  constructor(kind: SpeechErrorKind, message: string, cause?: unknown) {
+    super(message);
+    this.name = 'SpeechErrorException';
+    this.kind = kind;
+    if (cause !== undefined) this.cause = cause;
+  }
+}
+
 export interface TranscriptionProgress {
   stage: 'loading-model' | 'transcribing';
   ratio?: number; // 0..1 when known
 }
 
-// A source of transcripts. The mock needs no download; the Whisper provider
-// (added in Step 2) is lazy-loaded and runs locally in the browser.
+// A source of transcripts. The mock needs no download; the Whisper provider is
+// lazy-loaded and runs locally in the browser.
 export interface TranscriptionProvider {
   readonly id: string;
   isSupported(): boolean;
