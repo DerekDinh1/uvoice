@@ -1,99 +1,136 @@
-# Prompt Architect
+# 🧭 Prompt Architect
 
-Interview-driven writing-style profiler. Answer a short set of writing
-exercises, let an LLM analyze how you naturally write, and generate a reusable
-Markdown system prompt you can hand to any AI assistant.
+**Discover how you naturally write, then turn it into a reusable AI system prompt.**
 
-Built as a static single-page app so it can be hosted for free on GitHub Pages
-and run entirely in the browser.
+[![Deploy](https://github.com/DerekDinh1/uvoice/actions/workflows/deploy.yml/badge.svg)](https://github.com/DerekDinh1/uvoice/actions/workflows/deploy.yml)
+![React](https://img.shields.io/badge/React-18-149ECA?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
 
-> **Status:** built in reviewed phases. **Phase 1 (project foundation)** is
-> complete: tooling, routing, layout, navigation, and the deploy pipeline.
-> LLM functionality arrives in Phase 3.
+Prompt Architect interviews you with a short set of writing exercises, analyzes
+your natural style, and generates a Markdown system prompt you can hand to any AI
+assistant so its replies sound like you. Everything runs in the browser.
 
-## Tech stack
+> **Status:** built in reviewed phases. The assessment engine and theming are
+> live today; style analysis, prompt generation, and local speech input are on
+> the [roadmap](#-roadmap) below.
 
-- **React 18 + TypeScript** (strict mode)
-- **Vite** build tooling
-- **Tailwind CSS v4**
-- **React Router** (HashRouter, for GitHub Pages compatibility)
-- **Zustand** for state + LocalStorage persistence (used from Phase 2)
-- **Zod** for validating LLM responses (used from Phase 3)
-- **Vitest** + Testing Library
+## ✨ Highlights
 
-## 1. Local development
+- **Writing-style interview.** 12 exercises spanning different modes of writing,
+  one question at a time, with progress that survives a refresh.
+- **Runs entirely in your browser.** Static single-page app, free to host on
+  GitHub Pages, no backend.
+- **Bring your own key, or don't.** A mock mode will let the whole flow work with
+  no API key; live mode uses your own key, kept in memory by default.
+- **Speak or type (planned).** Optional spoken answers transcribed locally with an
+  open-source Whisper model. Your audio is never uploaded.
+- **Light and dark themes.** A soft, warm light mode and a matching dark mode,
+  following your system by default.
+
+## 📖 Overview
+
+You answer a handful of writing prompts. An LLM reads your responses and scores
+your style across dimensions like directness, formality, and technical depth,
+then produces two things: a human-readable style profile and an AI-optimized
+system prompt you can copy or download as Markdown.
+
+The whole product is a static React app. There is no server and no database; your
+answers live in your browser via LocalStorage. The only network call is the
+optional LLM request, made with a key you provide. Built by
+[DerekDinh1](https://github.com/DerekDinh1).
+
+## 🚀 Quick start
 
 ```bash
+git clone https://github.com/DerekDinh1/uvoice.git
+cd uvoice
 npm install
 npm run dev
 ```
 
-The dev server prints a local URL (default http://localhost:5173).
+Open the printed local URL (default http://localhost:5173), go to **Assessment**,
+and start answering. Your progress is saved as you go.
 
-Useful scripts:
+Other scripts:
 
 ```bash
 npm run build     # type-check + production build to dist/
 npm run preview   # serve the production build locally
+npm run test      # run the test suite once
 npm run lint      # ESLint
-npm run test      # Vitest (run once)
-npm run format    # Prettier
 ```
 
-## 2. Environment configuration
+## 🔒 Privacy and API keys
 
-There is **no build-time API key** and none is committed to the repo. When live
-LLM mode is added (Phase 3), you provide your own key in the app's Settings
-screen; by default it is kept in memory for the session only.
+- **No key is committed to this repo, ever.** There is no build-time key.
+- **Your assessment answers stay in your browser** (LocalStorage). Nothing is sent
+  to a server of ours.
+- **Live LLM mode (Phase 3)** uses a key you paste into Settings, kept in memory
+  for the session by default. Browser-side API usage is fine for personal and
+  demo use, but it is not a secure production setup: a key used in the browser is
+  exposed to that browser. A serverless proxy is a future step, not part of the MVP.
+- **Speech (Phase 2.5)** transcribes audio locally with Whisper via WebAssembly.
+  Audio is not uploaded. Model weights are downloaded once from the Hugging Face
+  CDN and then cached.
 
-## 3. GitHub Pages deployment
-
-Pushing to `main` triggers `.github/workflows/deploy.yml`, which lints, tests,
-builds, and deploys `dist/` to GitHub Pages. Enable Pages once under
-**Settings → Pages → Build and deployment → Source: GitHub Actions**.
-
-The Vite `base` is set to `/uvoice/` for production builds to match the Pages
-URL path. If the repository is renamed, update `base` in `vite.config.ts`.
-
-## 4. Demo / mock mode
-
-The app is designed to run fully without an API key using a mock LLM provider
-(added in Phase 3), so the public demo works with zero setup.
-
-## 5. API key limitations
-
-Browser-side API usage is appropriate for personal and demo use, but it is not
-a secure production architecture. A key used in the browser is exposed to that
-browser. A serverless proxy is a documented future phase, not part of the MVP.
-
-## 6. Architecture
+## 🏗️ Architecture
 
 ```
 src/
-  pages/        route screens (Welcome, Assessment, Profile, Prompt, Settings)
-  components/   presentational UI (layout, and later assessment/profile/prompt)
-  services/     analysis, prompt generation, evaluation (Phase 3+)
-  prompts/      LLM prompt templates (Phase 3+)
-  lib/llm/      LLMProvider interface + Mock/OpenAI providers (Phase 3+)
-  types/        shared TypeScript interfaces (Phase 2+)
-  data/         assessment questions (Phase 2)
-  config/       centralized routes, storage keys, model + scale config
-  utils/        small helpers
+  pages/         route screens (Welcome, Assessment, Profile, Prompt, Settings)
+  components/    presentational UI (layout, assessment, and later speech/profile)
+  hooks/         browser-facing hooks (e.g. useAudioRecorder)
+  services/      analysis, prompt generation, speech providers
+  store/         Zustand stores (assessment, theme), persisted to LocalStorage
+  lib/           small helpers (theme)
+  types/         shared TypeScript interfaces
+  data/          assessment questions
+  config/        centralized routes, storage keys, model, and theme config
 ```
 
-UI components never call the LLM directly. They go through `services/`, which
-depend on an `LLMProvider` interface rather than a concrete implementation.
+UI components never call an LLM or speech engine directly. They go through
+`services/`, which depend on small provider interfaces (`LLMProvider`,
+`TranscriptionProvider`) rather than concrete implementations, so a mock can stand
+in for tests and demos and real providers slot in without touching the UI.
 
-## 7. Future roadmap
+**Stack:** React 18, TypeScript (strict), Vite, Tailwind CSS v4, React Router
+(HashRouter, for GitHub Pages), Zustand, Zod, Vitest.
 
-- Phase 2: assessment engine + persistence
-- Phase 3: LLM provider abstraction, mock + OpenAI, style analysis
-- Phase 4: style profile UI with editing
-- Phase 5: Markdown prompt generation, copy, download
-- Phase 6: style evaluation loop
-- Phase 7: refinement + lightweight version history
-- Phase 8: production polish (a11y, responsive, states)
-- Phase 9: GitHub Pages deployment verification
+## 🌐 Deployment
 
-Later, beyond the MVP: a serverless API proxy, and expansion toward a broader
-"Voiceprint" platform (see project brief).
+Pushing to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml),
+which lints, tests, builds, and deploys `dist/` to GitHub Pages. Enable it once
+under **Settings → Pages → Source: GitHub Actions**. The Vite `base` is `/uvoice/`
+in production to match the Pages URL; update it in `vite.config.ts` if the repo is
+renamed.
+
+## 🗺️ Roadmap
+
+- Phase 0: Architecture [COMPLETE]
+- Phase 1: Project Foundation [COMPLETE]
+- Phase 2: Assessment Engine [COMPLETE]
+- Phase 2.5: Local Speech Recognition [PLANNED]
+- Phase 3: Style Analysis [PLANNED]
+- Phase 4: Style Profile UI [PLANNED]
+- Phase 5: Prompt Generator [PLANNED]
+- Phase 6: Evaluation Loop [PLANNED]
+- Phase 7: Refinement [PLANNED]
+- Phase 8: Production Polish [PLANNED]
+- Phase 9: GitHub Pages Deployment [PLANNED]
+
+Beyond the MVP: a serverless API proxy and expansion toward a broader "Voiceprint"
+platform.
+
+## 🙌 Contributing and feedback
+
+Ideas, bugs, and questions are welcome through
+[Issues](https://github.com/DerekDinh1/uvoice/issues). This is an actively
+developed project built one reviewed phase at a time, so early feedback is useful.
+
+## 📚 Further reading
+
+- [Transformers.js](https://github.com/huggingface/transformers.js) for in-browser Whisper
+- [whisper.cpp](https://github.com/ggerganov/whisper.cpp), the C/C++ Whisper implementation
+- [Vite](https://vite.dev/) and [Tailwind CSS](https://tailwindcss.com/) docs
+- This README follows [banesullivan/README](https://github.com/banesullivan/README), a guide to writing good READMEs
