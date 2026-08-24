@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { APP_NAME, NAV_ITEMS, ROUTES } from '../../config';
+import { ThemeToggle } from './ThemeToggle';
 
 const baseLink =
   'block rounded-md px-3 py-2 text-sm font-medium transition-colors';
@@ -9,7 +10,7 @@ export function NavBar() {
     <nav className="flex h-full flex-col gap-6">
       <NavLink
         to={ROUTES.welcome}
-        className="text-lg font-semibold tracking-tight text-slate-900"
+        className="text-lg font-semibold tracking-tight text-text"
       >
         {APP_NAME}
       </NavLink>
@@ -22,8 +23,8 @@ export function NavBar() {
               className={({ isActive }) =>
                 `${baseLink} ${
                   isActive
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-accent text-accent-fg'
+                    : 'text-muted hover:bg-surface-2 hover:text-text'
                 }`
               }
             >
@@ -32,6 +33,10 @@ export function NavBar() {
           </li>
         ))}
       </ul>
+
+      <div className="mt-auto">
+        <ThemeToggle />
+      </div>
     </nav>
   );
 }

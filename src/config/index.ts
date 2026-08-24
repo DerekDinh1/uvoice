@@ -1,5 +1,5 @@
 // Central configuration. No string literals for routes, storage keys, model
-// names, or scale semantics should live anywhere else in the app.
+// names, theme, or scale semantics should live anywhere else in the app.
 
 export const APP_NAME = 'Prompt Architect';
 
@@ -28,7 +28,12 @@ export const SCHEMA_VERSION = 1;
 export const STORAGE_KEYS = {
   appState: 'prompt-architect:state',
   apiKey: 'prompt-architect:openai-key',
+  theme: 'prompt-architect:theme',
 } as const;
+
+// Theme options. "system" follows the OS preference.
+export const THEME_MODES = ['light', 'dark', 'system'] as const;
+export type ThemeMode = (typeof THEME_MODES)[number];
 
 // LLM settings are centralized here now but stay unused until Phase 3.
 export const LLM_CONFIG = {

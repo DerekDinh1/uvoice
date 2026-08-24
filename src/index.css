@@ -1,1 +1,49 @@
 @import 'tailwindcss';
+
+/* Semantic color tokens. Light mode is a soft, warm off-white rather than stark
+   white; dark mode redefines the same tokens. Components reference the tokens
+   only, so toggling the .dark class on <html> reskins the whole app. */
+:root {
+  --bg: #f2f1ec;
+  --surface: #faf9f5;
+  --surface-2: #e7e6df;
+  --border: #e1e0d8;
+  --text: #2a2822;
+  --muted: #6c695f;
+  --accent: #2c2823;
+  --accent-fg: #faf9f5;
+  --success-bg: #e7f1e9;
+  --success-text: #2f6b43;
+  --danger: #b23b2e;
+}
+
+.dark {
+  --bg: #131417;
+  --surface: #1c1e22;
+  --surface-2: #262930;
+  --border: #30333b;
+  --text: #eae9e5;
+  --muted: #a29e95;
+  --accent: #eae9e5;
+  --accent-fg: #17181b;
+  --success-bg: #16241c;
+  --success-text: #82cf9c;
+  --danger: #f0897f;
+}
+
+/* Expose the tokens to Tailwind as utility colors (bg-bg, text-text,
+   border-border, bg-accent, text-muted, ...). "inline" keeps the var()
+   reference so theme switching updates every utility at runtime. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-success-bg: var(--success-bg);
+  --color-success-text: var(--success-text);
+  --color-danger: var(--danger);
+}

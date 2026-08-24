@@ -13,13 +13,15 @@ export function PagePlaceholder({
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+        <h1 className="text-2xl font-semibold tracking-tight text-text">
+          {title}
+        </h1>
+        <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-muted">
           {phase}
         </span>
       </div>
-      <p className="max-w-xl text-slate-600">{description}</p>
-      <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-400">
+      <p className="max-w-xl text-muted">{description}</p>
+      <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center text-sm text-muted">
         Coming in {phase}.
       </div>
     </section>

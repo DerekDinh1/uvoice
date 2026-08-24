@@ -5,7 +5,7 @@ export function ProfilePage() {
     <PagePlaceholder
       title="Profile"
       phase="Phase 4"
-      description="Your structured writing-style profile — scores, voice, tone, structure, tendencies, and things to avoid — with inline editing."
+      description="Your writing-style profile: scores, voice, tone, structure, tendencies, and what to avoid, all editable inline."
     />
   );
 }

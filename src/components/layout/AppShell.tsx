@@ -6,11 +6,11 @@ interface AppShellProps {
 }
 
 // Two-column app frame: a fixed sidebar with primary navigation and a scrollable
-// content area. Kept intentionally minimal for Phase 1.
+// content area. Colors come from semantic theme tokens.
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900">
-      <aside className="w-60 shrink-0 border-r border-slate-200 bg-white p-6">
+    <div className="flex min-h-screen bg-bg text-text">
+      <aside className="w-60 shrink-0 border-r border-border bg-surface p-6">
         <NavBar />
       </aside>
       <main className="flex-1 overflow-y-auto">

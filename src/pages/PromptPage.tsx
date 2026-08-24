@@ -5,7 +5,7 @@ export function PromptPage() {
     <PagePlaceholder
       title="Prompt"
       phase="Phase 5"
-      description="The generated Markdown system prompt, with preview, copy-to-clipboard, and .md download."
+      description="The generated Markdown system prompt, with a live preview, copy to clipboard, and a .md download."
     />
   );
 }

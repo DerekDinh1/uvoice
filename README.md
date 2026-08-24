@@ -63,7 +63,7 @@ The app is designed to run fully without an API key using a mock LLM provider
 ## 5. API key limitations
 
 Browser-side API usage is appropriate for personal and demo use, but it is not
-a secure production architecture — a key used in the browser is exposed to that
+a secure production architecture. A key used in the browser is exposed to that
 browser. A serverless proxy is a documented future phase, not part of the MVP.
 
 ## 6. Architecture
@@ -81,19 +81,19 @@ src/
   utils/        small helpers
 ```
 
-UI components never call the LLM directly — they go through `services/`, which
+UI components never call the LLM directly. They go through `services/`, which
 depend on an `LLMProvider` interface rather than a concrete implementation.
 
 ## 7. Future roadmap
 
-- Phase 2 — assessment engine + persistence
-- Phase 3 — LLM provider abstraction, mock + OpenAI, style analysis
-- Phase 4 — style profile UI with editing
-- Phase 5 — Markdown prompt generation, copy, download
-- Phase 6 — style evaluation loop
-- Phase 7 — refinement + lightweight version history
-- Phase 8 — production polish (a11y, responsive, states)
-- Phase 9 — GitHub Pages deployment verification
+- Phase 2: assessment engine + persistence
+- Phase 3: LLM provider abstraction, mock + OpenAI, style analysis
+- Phase 4: style profile UI with editing
+- Phase 5: Markdown prompt generation, copy, download
+- Phase 6: style evaluation loop
+- Phase 7: refinement + lightweight version history
+- Phase 8: production polish (a11y, responsive, states)
+- Phase 9: GitHub Pages deployment verification
 
 Later, beyond the MVP: a serverless API proxy, and expansion toward a broader
 "Voiceprint" platform (see project brief).

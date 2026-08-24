@@ -5,7 +5,7 @@ export function SettingsPage() {
     <PagePlaceholder
       title="Settings"
       phase="Phase 3"
-      description="Choose mock or live mode and provide your own API key (kept in memory by default). No key is required for the demo."
+      description="Choose mock or live mode and add your own API key, kept in memory by default. The demo needs no key."
     />
   );
 }
