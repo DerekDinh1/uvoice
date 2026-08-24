@@ -1,5 +1,5 @@
 // Central configuration. No string literals for routes, storage keys, model
-// names, theme, or scale semantics should live anywhere else in the app.
+// names, theme, speech, or scale semantics should live anywhere else.
 
 export const APP_NAME = 'Prompt Architect';
 
@@ -40,6 +40,23 @@ export const LLM_CONFIG = {
   defaultProvider: 'mock',
   apiBaseUrl: 'https://api.openai.com/v1',
   model: 'gpt-4o-mini',
+} as const;
+
+// Speech (Phase 2.5). Whisper models are loaded lazily from the Hugging Face
+// CDN via Transformers.js; audio is transcribed locally and never uploaded.
+export const WHISPER_MODELS = {
+  'base.en': { label: 'Base (more accurate)', repo: 'Xenova/whisper-base.en' },
+  'tiny.en': { label: 'Tiny (faster, smaller)', repo: 'Xenova/whisper-tiny.en' },
+} as const;
+
+export type WhisperModelId = keyof typeof WHISPER_MODELS;
+
+export const SPEECH_CONFIG = {
+  // 'mock' works with no download; 'whisper' runs the real model (Step 2+).
+  defaultProviderMode: 'mock',
+  defaultModel: 'base.en',
+  // Whisper expects 16 kHz mono audio; the provider resamples to this.
+  targetSampleRate: 16000,
 } as const;
 
 // Shared score semantics for profile dimensions.
