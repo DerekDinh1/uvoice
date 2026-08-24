@@ -12,14 +12,14 @@ describe('speech providers', () => {
   });
 
   it('factory returns the mock provider for mock mode', async () => {
-    const provider = createTranscriptionProvider('mock');
+    const provider = await createTranscriptionProvider('mock');
     expect(provider.id).toBe('mock');
     const text = await provider.transcribe(new Blob(['audio']));
     expect(text.trim().length).toBeGreaterThan(0);
   });
 
-  it('factory returns a whisper provider for whisper mode', () => {
-    const provider = createTranscriptionProvider('whisper');
+  it('factory returns a whisper provider for whisper mode', async () => {
+    const provider = await createTranscriptionProvider('whisper');
     expect(provider.id).toBe('whisper');
   });
 });
