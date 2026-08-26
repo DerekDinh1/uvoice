@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Prompt Architect">
+  <!-- Inverts with the browser's theme so the tile keeps contrast against both
+       light and dark tab bars. Browsers without prefers-color-scheme support in
+       SVG favicons fall back to the light styling, which is still legible. -->
+  <style>
+    .tile { fill: #2c2823; }
+    .mark { stroke: #faf9f5; }
+    .cursor { fill: #faf9f5; }
+    @media (prefers-color-scheme: dark) {
+      .tile { fill: #faf9f5; }
+      .mark { stroke: #17181b; }
+      .cursor { fill: #17181b; }
+    }
+  </style>
+  <rect class="tile" width="32" height="32" rx="7"/>
+  <path class="mark" d="M10 10.5 L16 16 L10 21.5"
+        fill="none" stroke-width="3"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <rect class="cursor" x="18.5" y="19" width="7.5" height="2.8" rx="1.4" opacity="0.8"/>
+</svg>
