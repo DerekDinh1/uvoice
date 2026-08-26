@@ -1,8 +1,6 @@
 import { useAppStore } from '../../store/useAppStore';
 import { QUESTIONS } from '../../data/questions';
-
-const button =
-  'rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40';
+import { buttonClass } from '../ui/buttonStyles';
 
 export function AssessmentNav() {
   const currentIndex = useAppStore((state) => state.currentIndex);
@@ -29,7 +27,7 @@ export function AssessmentNav() {
         type="button"
         onClick={previous}
         disabled={isFirst}
-        className={`${button} bg-surface-2 text-text hover:opacity-80`}
+        className={buttonClass('secondary')}
       >
         Previous
       </button>
@@ -37,7 +35,7 @@ export function AssessmentNav() {
       <button
         type="button"
         onClick={handleRestart}
-        className={`${button} text-muted hover:text-danger`}
+        className={buttonClass('ghost')}
       >
         Restart
       </button>
@@ -46,7 +44,7 @@ export function AssessmentNav() {
         type="button"
         onClick={next}
         disabled={isLast}
-        className={`${button} bg-accent text-accent-fg hover:opacity-90`}
+        className={buttonClass('primary')}
       >
         Next
       </button>

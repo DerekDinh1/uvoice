@@ -32,6 +32,15 @@ export class SpeechErrorException extends Error {
   }
 }
 
+// Normalizes anything thrown during transcription into displayable state, so
+// callers do not each re-implement the same instanceof check.
+export function toSpeechError(caught: unknown, fallback: string): SpeechError {
+  if (caught instanceof SpeechErrorException) {
+    return { kind: caught.kind, message: caught.message };
+  }
+  return { kind: 'transcription-failed', message: fallback };
+}
+
 export interface TranscriptionProgress {
   stage: 'loading-model' | 'transcribing';
   ratio?: number; // 0..1 when known

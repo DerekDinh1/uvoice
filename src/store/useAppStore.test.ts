@@ -38,17 +38,16 @@ describe('useAppStore assessment slice', () => {
     expect(raw).toContain('persisted answer');
   });
 
-  it('restart clears responses, index, and completion', () => {
+  it('restart clears responses, index, and start time', () => {
     useAppStore.getState().setResponse(secondId, 'x');
     useAppStore.getState().goTo(3);
-    useAppStore.getState().markComplete();
 
     useAppStore.getState().restartAssessment();
 
     const state = useAppStore.getState();
     expect(Object.keys(state.responses)).toHaveLength(0);
     expect(state.currentIndex).toBe(0);
-    expect(state.completedAt).toBeNull();
+    expect(state.startedAt).toBeNull();
   });
 
   it('does not count whitespace-only responses as answered', () => {

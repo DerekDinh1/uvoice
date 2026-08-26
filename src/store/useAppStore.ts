@@ -13,7 +13,6 @@ interface AssessmentState {
   responses: Record<string, AssessmentResponse>;
   currentIndex: number;
   startedAt: number | null;
-  completedAt: number | null;
 }
 
 interface AssessmentActions {
@@ -21,7 +20,6 @@ interface AssessmentActions {
   goTo: (index: number) => void;
   next: () => void;
   previous: () => void;
-  markComplete: () => void;
   restartAssessment: () => void;
 }
 
@@ -31,7 +29,6 @@ const emptyAssessment = (): AssessmentState => ({
   responses: {},
   currentIndex: 0,
   startedAt: null,
-  completedAt: null,
 });
 
 export const useAppStore = create<AppStore>()(
@@ -57,8 +54,6 @@ export const useAppStore = create<AppStore>()(
       next: () => get().goTo(get().currentIndex + 1),
       previous: () => get().goTo(get().currentIndex - 1),
 
-      markComplete: () => set({ completedAt: Date.now() }),
-
       // Clears only assessment data; uses fresh objects so no reset shares state.
       restartAssessment: () => set(emptyAssessment()),
     }),
@@ -71,7 +66,6 @@ export const useAppStore = create<AppStore>()(
         responses: state.responses,
         currentIndex: state.currentIndex,
         startedAt: state.startedAt,
-        completedAt: state.completedAt,
       }),
     },
   ),

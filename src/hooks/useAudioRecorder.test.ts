@@ -1,39 +1,14 @@
-import { beforeEach, describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useAudioRecorder } from './useAudioRecorder';
-
-type DataHandler = (event: { data: Blob }) => void;
-
-class MockMediaRecorder {
-  state: 'inactive' | 'recording' = 'inactive';
-  mimeType = 'audio/webm';
-  ondataavailable: DataHandler | null = null;
-  onstop: (() => void) | null = null;
-  constructor(_stream: MediaStream) {}
-  start() {
-    this.state = 'recording';
-  }
-  stop() {
-    this.state = 'inactive';
-    this.ondataavailable?.({ data: new Blob(['audio'], { type: 'audio/webm' }) });
-    this.onstop?.();
-  }
-}
-
-const fakeStream = {
-  getTracks: () => [{ stop: () => {} }],
-} as unknown as MediaStream;
-
-function setMediaDevices(value: unknown) {
-  Object.defineProperty(navigator, 'mediaDevices', {
-    configurable: true,
-    value,
-  });
-}
+import {
+  installWorkingMicrophone,
+  denyMicrophonePermission,
+  setMediaDevices,
+} from '../test/mediaRecorderMock';
 
 beforeEach(() => {
-  window.MediaRecorder = MockMediaRecorder as unknown as typeof MediaRecorder;
-  setMediaDevices({ getUserMedia: vi.fn().mockResolvedValue(fakeStream) });
+  installWorkingMicrophone();
 });
 
 describe('useAudioRecorder', () => {
@@ -55,11 +30,7 @@ describe('useAudioRecorder', () => {
   });
 
   it('reports a permission-denied error when the mic is blocked', async () => {
-    setMediaDevices({
-      getUserMedia: vi
-        .fn()
-        .mockRejectedValue(new DOMException('no', 'NotAllowedError')),
-    });
+    denyMicrophonePermission();
     const { result } = renderHook(() => useAudioRecorder());
 
     await act(async () => {

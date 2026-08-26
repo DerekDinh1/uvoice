@@ -1,45 +1,23 @@
-import { useRef, useState } from 'react';
 import { useAudioRecorder } from '../../hooks/useAudioRecorder';
-import { MockSpeechProvider } from '../../services/speech/mockSpeechProvider';
-import { SpeechErrorException } from '../../types/speech';
-import type {
-  SpeechError,
-  TranscriptionProgress,
-  TranscriptionProvider,
-} from '../../types/speech';
+import { useTranscription } from '../../hooks/useTranscription';
+import { useSettingsStore } from '../../store/useSettingsStore';
+import { buttonClass } from '../ui/buttonStyles';
 import { SpeechStatus } from './SpeechStatus';
 
 interface SpeechRecorderProps {
   onTranscript: (text: string) => void;
 }
 
-const buttonBase =
-  'inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40';
+const control = (variant: 'outline' | 'danger') =>
+  `inline-flex items-center gap-2 ${buttonClass(variant, 'px-3 py-1.5')}`;
 
-// Optional voice input. Records with the microphone, transcribes through a
-// provider, and hands the text back to the parent. Typing is always available,
-// so this never blocks the assessment.
-//
-// Step 3 uses the mock provider only, which keeps the build free of the heavy
-// Whisper runtime. Step 4 swaps this for createTranscriptionProvider(mode, model)
-// once real on-device mode is selectable and its assets are configured for
-// GitHub Pages.
+// Optional voice input. Records with the microphone, hands the audio to the
+// transcription hook, and passes the resulting text to the parent. Typing is
+// always available, so this never blocks the assessment.
 export function SpeechRecorder({ onTranscript }: SpeechRecorderProps) {
   const recorder = useAudioRecorder();
-
-  const providerRef = useRef<TranscriptionProvider | null>(null);
-  const getProvider = (): TranscriptionProvider => {
-    if (!providerRef.current) {
-      providerRef.current = new MockSpeechProvider();
-    }
-    return providerRef.current;
-  };
-
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [progress, setProgress] = useState<TranscriptionProgress | null>(null);
-  const [transcribeError, setTranscribeError] = useState<SpeechError | null>(
-    null,
-  );
+  const transcription = useTranscription();
+  const speechMode = useSettingsStore((state) => state.speechMode);
 
   if (!recorder.isSupported) {
     return (
@@ -51,49 +29,25 @@ export function SpeechRecorder({ onTranscript }: SpeechRecorderProps) {
 
   const isRecording = recorder.state === 'recording';
   const isRequesting = recorder.state === 'requesting';
-  const error = transcribeError ?? recorder.error;
+  const error = transcription.error ?? recorder.error;
 
   const handleStart = async () => {
-    setTranscribeError(null);
+    transcription.setError(null);
     await recorder.start();
   };
 
   const handleStop = async () => {
-    const blob = await recorder.stop();
-    if (!blob) {
-      setTranscribeError({
+    const audio = await recorder.stop();
+    if (!audio) {
+      transcription.setError({
         kind: 'no-audio',
         message: 'No audio was captured. Try again.',
       });
       return;
     }
 
-    setIsTranscribing(true);
-    setProgress({ stage: 'loading-model' });
-    try {
-      const text = await getProvider().transcribe(blob, setProgress);
-      if (text) {
-        onTranscript(text);
-      } else {
-        setTranscribeError({
-          kind: 'transcription-failed',
-          message: 'Nothing was transcribed. Try again or type your answer.',
-        });
-      }
-    } catch (caught) {
-      setTranscribeError(
-        caught instanceof SpeechErrorException
-          ? { kind: caught.kind, message: caught.message }
-          : {
-              kind: 'transcription-failed',
-              message:
-                'Transcription failed. You can type your answer instead.',
-            },
-      );
-    } finally {
-      setIsTranscribing(false);
-      setProgress(null);
-    }
+    const text = await transcription.transcribe(audio);
+    if (text) onTranscript(text);
   };
 
   return (
@@ -104,7 +58,7 @@ export function SpeechRecorder({ onTranscript }: SpeechRecorderProps) {
             type="button"
             onClick={handleStop}
             aria-label="Stop recording and transcribe"
-            className={`${buttonBase} bg-danger text-white hover:opacity-90`}
+            className={control('danger')}
           >
             <span aria-hidden="true">■</span> Stop
           </button>
@@ -112,16 +66,16 @@ export function SpeechRecorder({ onTranscript }: SpeechRecorderProps) {
           <button
             type="button"
             onClick={handleStart}
-            disabled={isTranscribing || isRequesting}
+            disabled={transcription.isTranscribing || isRequesting}
             aria-label="Record a spoken answer"
-            className={`${buttonBase} border border-border bg-surface-2 text-text hover:opacity-80`}
+            className={control('outline')}
           >
             <span aria-hidden="true" className="text-danger">
               ●
             </span>
             {isRequesting
               ? 'Allow mic...'
-              : isTranscribing
+              : transcription.isTranscribing
                 ? 'Working...'
                 : 'Speak'}
           </button>
@@ -130,10 +84,17 @@ export function SpeechRecorder({ onTranscript }: SpeechRecorderProps) {
         <SpeechStatus
           isRecording={isRecording}
           elapsedMs={recorder.elapsedMs}
-          isTranscribing={isTranscribing}
-          progress={progress}
+          isTranscribing={transcription.isTranscribing}
+          progress={transcription.progress}
         />
       </div>
+
+      {speechMode === 'mock' && (
+        <p className="text-xs text-muted">
+          Demo mode returns a sample sentence, not your words. Switch to
+          on-device Whisper in Settings to transcribe what you say.
+        </p>
+      )}
 
       {error && (
         <p role="alert" className="text-xs text-danger">
