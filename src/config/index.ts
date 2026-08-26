@@ -29,6 +29,7 @@ export const STORAGE_KEYS = {
   appState: 'prompt-architect:state',
   apiKey: 'prompt-architect:openai-key',
   theme: 'prompt-architect:theme',
+  settings: 'prompt-architect:settings',
 } as const;
 
 // Theme options. "system" follows the OS preference.
@@ -45,18 +46,55 @@ export const LLM_CONFIG = {
 // Speech (Phase 2.5). Whisper models are loaded lazily from the Hugging Face
 // CDN via Transformers.js; audio is transcribed locally and never uploaded.
 export const WHISPER_MODELS = {
-  'base.en': { label: 'Base (more accurate)', repo: 'Xenova/whisper-base.en' },
-  'tiny.en': { label: 'Tiny (faster, smaller)', repo: 'Xenova/whisper-tiny.en' },
+  'base.en': {
+    label: 'Base (more accurate)',
+    repo: 'onnx-community/whisper-base.en',
+  },
+  'tiny.en': {
+    label: 'Tiny (faster, smaller)',
+    repo: 'onnx-community/whisper-tiny.en',
+  },
 } as const;
 
 export type WhisperModelId = keyof typeof WHISPER_MODELS;
 
+// How a spoken answer becomes text. 'mock' returns a fixed sample transcript with
+// no download; 'whisper' runs the real model on the device.
+export const SPEECH_PROVIDER_MODES = ['mock', 'whisper'] as const;
+export type SpeechProviderMode = (typeof SPEECH_PROVIDER_MODES)[number];
+
+export const SPEECH_PROVIDER_LABELS: Record<
+  SpeechProviderMode,
+  { label: string; description: string }
+> = {
+  mock: {
+    label: 'Demo transcript',
+    description:
+      'Returns a fixed sample sentence instead of your words. Nothing is downloaded, so the flow works instantly.',
+  },
+  whisper: {
+    label: 'On-device Whisper',
+    description:
+      'Transcribes what you actually said, running the model in your browser. The first use downloads the model.',
+  },
+};
+
 export const SPEECH_CONFIG = {
-  // 'mock' works with no download; 'whisper' runs the real model (Step 2+).
-  defaultProviderMode: 'mock',
+  // Real transcription by default; demo mode stays available for slow
+  // connections or devices that struggle with the model.
+  defaultProviderMode: 'whisper',
   defaultModel: 'base.en',
   // Whisper expects 16 kHz mono audio; the provider resamples to this.
   targetSampleRate: 16000,
+  // ONNX Runtime requires its WASM binaries to match the JS build exactly, so
+  // this version must track the installed onnxruntime-web. Serving them from a
+  // CDN keeps the deployed site small.
+  ortWasmBaseUrl:
+    'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/',
+  // Weight precision per sub-model. The default 4-bit decoder weights fail to
+  // build an inference session in this ONNX Runtime build, so the encoder runs
+  // fp32 and the decoder uses 8-bit, which keeps the download reasonable.
+  dtype: { encoder_model: 'fp32', decoder_model_merged: 'q8' },
 } as const;
 
 // Shared score semantics for profile dimensions.

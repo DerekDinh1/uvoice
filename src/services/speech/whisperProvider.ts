@@ -25,7 +25,7 @@ interface ProgressInfo {
 
 // Local Whisper transcription via Transformers.js (ONNX Runtime Web / WASM). The
 // library and model load lazily on first use. Audio never leaves the browser;
-// model weights are fetched once from the Hugging Face CDN and then cached.
+// model weights and the WASM runtime are fetched once and then cached.
 export class WhisperProvider implements TranscriptionProvider {
   readonly id = 'whisper';
   private transcriber: Transcriber | null = null;
@@ -49,9 +49,22 @@ export class WhisperProvider implements TranscriptionProvider {
     if (this.transcriber) return;
     try {
       const { pipeline, env } = await import('@huggingface/transformers');
-      env.allowLocalModels = false; // load weights from the Hugging Face CDN
+
+      env.allowLocalModels = false; // model weights come from the Hugging Face CDN
+
+      // GitHub Pages cannot send the COOP/COEP headers that SharedArrayBuffer
+      // needs, so multi-threaded WASM is unavailable. Pin a single thread and
+      // load the matching runtime binaries rather than letting the bundler
+      // inline a 22 MB asset into the deployed site.
+      const wasmBackend = env.backends?.onnx?.wasm;
+      if (wasmBackend) {
+        wasmBackend.wasmPaths = SPEECH_CONFIG.ortWasmBaseUrl;
+        wasmBackend.numThreads = 1;
+      }
+
       const repo = WHISPER_MODELS[this.model].repo;
       const pipe = await pipeline('automatic-speech-recognition', repo, {
+        dtype: SPEECH_CONFIG.dtype,
         progress_callback: (info: ProgressInfo) => {
           if (info.status === 'progress' && typeof info.progress === 'number') {
             onProgress?.({ stage: 'loading-model', ratio: info.progress / 100 });
@@ -62,7 +75,7 @@ export class WhisperProvider implements TranscriptionProvider {
     } catch (caught) {
       throw new SpeechErrorException(
         'model-load-failed',
-        'Could not load the speech model.',
+        'Could not load the speech model. Check your connection, or switch to demo transcript in Settings.',
         caught,
       );
     }

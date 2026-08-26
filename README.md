@@ -11,8 +11,8 @@ Prompt Architect interviews you with a short set of writing exercises, analyzes
 your natural style, and generates a Markdown system prompt you can hand to any AI
 assistant so its replies sound like you. Everything runs in the browser.
 
-> **Status:** built in reviewed phases. The assessment engine and theming are
-> live today; style analysis, prompt generation, and local speech input are on
+> **Status:** built in reviewed phases. The assessment engine, theming, and
+> local voice input are live today; style analysis and prompt generation are on
 > the [roadmap](#-roadmap) below.
 
 ## ✨ Highlights
@@ -23,8 +23,8 @@ assistant so its replies sound like you. Everything runs in the browser.
   GitHub Pages, no backend.
 - **Bring your own key, or don't.** A mock mode will let the whole flow work with
   no API key; live mode uses your own key, kept in memory by default.
-- **Speak or type (planned).** Optional spoken answers transcribed locally with an
-  open-source Whisper model. Your audio is never uploaded.
+- **Speak or type.** Answer out loud and the words are transcribed on your own
+  device with an open-source Whisper model. Your audio is never uploaded.
 - **Light and dark themes.** A soft, warm light mode and a matching dark mode,
   following your system by default.
 
@@ -70,9 +70,11 @@ npm run lint      # ESLint
   for the session by default. Browser-side API usage is fine for personal and
   demo use, but it is not a secure production setup: a key used in the browser is
   exposed to that browser. A serverless proxy is a future step, not part of the MVP.
-- **Speech (Phase 2.5)** transcribes audio locally with Whisper via WebAssembly.
-  Audio is not uploaded. Model weights are downloaded once from the Hugging Face
-  CDN and then cached.
+- **Voice input** transcribes audio locally with Whisper via WebAssembly. Your
+  audio is never uploaded. On first use the model files (and the WASM runtime)
+  are downloaded from a public CDN, then cached in your browser; expect roughly
+  half a minute the first time and a couple of seconds after that. Pick base or
+  tiny in Settings, or switch to demo mode to skip the download entirely.
 
 ## 🏗️ Architecture
 
@@ -110,7 +112,7 @@ renamed.
 - Phase 0: Architecture [COMPLETE]
 - Phase 1: Project Foundation [COMPLETE]
 - Phase 2: Assessment Engine [COMPLETE]
-- Phase 2.5: Local Speech Recognition [PLANNED]
+- Phase 2.5: Local Speech Recognition [COMPLETE]
 - Phase 3: Style Analysis [PLANNED]
 - Phase 4: Style Profile UI [PLANNED]
 - Phase 5: Prompt Generator [PLANNED]
