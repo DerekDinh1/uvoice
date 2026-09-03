@@ -15,7 +15,7 @@ export function AssessmentPage() {
   return (
     <section className="space-y-6">
       <ProgressBar />
-      <QuestionCard question={question} />
+      <QuestionCard key={question.id} question={question} />
       <AssessmentNav />
 
       {allAnswered && <AnalyzeBanner responses={responses} />}

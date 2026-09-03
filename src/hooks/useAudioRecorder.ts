@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RecordingState, SpeechError } from '../types/speech';
 
 export interface UseAudioRecorder {
@@ -133,6 +133,23 @@ export function useAudioRecorder(): UseAudioRecorder {
     setElapsedMs(0);
     setError(null);
     setState('idle');
+  }, [clearTimer, stopStream]);
+
+  // Release the microphone if the component unmounts mid-recording (e.g. the
+  // user navigates away without stopping). Handlers are cleared first so the
+  // teardown does not set state on an unmounted component.
+  useEffect(() => {
+    return () => {
+      clearTimer();
+      const recorder = recorderRef.current;
+      if (recorder) {
+        recorder.onstop = null;
+        recorder.ondataavailable = null;
+        if (recorder.state !== 'inactive') recorder.stop();
+        recorderRef.current = null;
+      }
+      stopStream();
+    };
   }, [clearTimer, stopStream]);
 
   return { state, elapsedMs, error, isSupported, start, stop, reset };

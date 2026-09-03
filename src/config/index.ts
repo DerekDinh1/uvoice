@@ -19,15 +19,19 @@ export const NAV_ITEMS = [
   { label: 'Settings', path: ROUTES.settings },
 ] as const;
 
-// Bumped when the persisted LocalStorage shape changes in a breaking way, so a
-// future migration can detect and upgrade older saved state. (Used from Phase 2.)
-export const SCHEMA_VERSION = 1;
+// Per-store persisted-schema versions. Each store carries its own so bumping one
+// (after a breaking shape change) never discards the others' saved state.
+export const SCHEMA_VERSIONS = {
+  appState: 1,
+  settings: 1,
+  theme: 1,
+  analysis: 1,
+} as const;
 
 // Every LocalStorage key the app uses. The API key is stored under its own key,
 // separate from app state, and only when the user opts in (Phase 3).
 export const STORAGE_KEYS = {
   appState: 'prompt-architect:state',
-  apiKey: 'prompt-architect:openai-key',
   theme: 'prompt-architect:theme',
   settings: 'prompt-architect:settings',
   analysis: 'prompt-architect:analysis',

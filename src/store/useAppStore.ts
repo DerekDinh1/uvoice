@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AssessmentResponse } from '../types/assessment';
 import { QUESTIONS } from '../data/questions';
-import { STORAGE_KEYS, SCHEMA_VERSION } from '../config';
+import { STORAGE_KEYS, SCHEMA_VERSIONS } from '../config';
 
 const LAST_INDEX = QUESTIONS.length - 1;
 const clampIndex = (index: number) => Math.min(Math.max(index, 0), LAST_INDEX);
@@ -59,7 +59,7 @@ export const useAppStore = create<AppStore>()(
     }),
     {
       name: STORAGE_KEYS.appState,
-      version: SCHEMA_VERSION,
+      version: SCHEMA_VERSIONS.appState,
       storage: createJSONStorage(() => localStorage),
       // Persist data only; actions are re-provided by the store creator.
       partialize: (state) => ({

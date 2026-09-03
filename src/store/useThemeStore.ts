@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { STORAGE_KEYS, SCHEMA_VERSION, type ThemeMode } from '../config';
+import { STORAGE_KEYS, SCHEMA_VERSIONS, type ThemeMode } from '../config';
 
 interface ThemeStore {
   mode: ThemeMode;
@@ -17,7 +17,7 @@ export const useThemeStore = create<ThemeStore>()(
     }),
     {
       name: STORAGE_KEYS.theme,
-      version: SCHEMA_VERSION,
+      version: SCHEMA_VERSIONS.theme,
       storage: createJSONStorage(() => localStorage),
     },
   ),

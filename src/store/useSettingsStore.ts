@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
   STORAGE_KEYS,
-  SCHEMA_VERSION,
+  SCHEMA_VERSIONS,
   SPEECH_CONFIG,
   LLM_CONFIG,
   type SpeechProviderMode,
@@ -38,7 +38,7 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: STORAGE_KEYS.settings,
-      version: SCHEMA_VERSION,
+      version: SCHEMA_VERSIONS.settings,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         speechMode: state.speechMode,

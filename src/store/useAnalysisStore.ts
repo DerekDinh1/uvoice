@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AssessmentResponse } from '../types/assessment';
 import type { StyleProfile } from '../types/styleProfile';
-import { STORAGE_KEYS, SCHEMA_VERSION } from '../config';
+import { STORAGE_KEYS, SCHEMA_VERSIONS } from '../config';
 import { createLLMProvider } from '../lib/llm';
 import { analyzeStyle, AnalysisError } from '../services/styleAnalyzer';
 import { useSettingsStore } from './useSettingsStore';
@@ -48,7 +48,7 @@ export const useAnalysisStore = create<AnalysisStore>()(
     }),
     {
       name: STORAGE_KEYS.analysis,
-      version: SCHEMA_VERSION,
+      version: SCHEMA_VERSIONS.analysis,
       storage: createJSONStorage(() => localStorage),
       // Persist the profile only; status and error are per-session.
       partialize: (state) => ({ profile: state.profile }),
