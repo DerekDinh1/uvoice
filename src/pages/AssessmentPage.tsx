@@ -3,6 +3,7 @@ import { QUESTIONS } from '../data/questions';
 import { ProgressBar } from '../components/assessment/ProgressBar';
 import { QuestionCard } from '../components/assessment/QuestionCard';
 import { AssessmentNav } from '../components/assessment/AssessmentNav';
+import { AnalyzeBanner } from '../components/analysis/AnalyzeBanner';
 
 export function AssessmentPage() {
   const currentIndex = useAppStore((state) => state.currentIndex);
@@ -17,11 +18,7 @@ export function AssessmentPage() {
       <QuestionCard question={question} />
       <AssessmentNav />
 
-      {allAnswered && (
-        <p className="rounded-md bg-success-bg px-4 py-3 text-sm text-success-text">
-          All twelve answered. Style analysis arrives in Phase 3.
-        </p>
-      )}
+      {allAnswered && <AnalyzeBanner responses={responses} />}
     </section>
   );
 }

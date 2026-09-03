@@ -30,6 +30,7 @@ export const STORAGE_KEYS = {
   apiKey: 'prompt-architect:openai-key',
   theme: 'prompt-architect:theme',
   settings: 'prompt-architect:settings',
+  analysis: 'prompt-architect:analysis',
 } as const;
 
 // Theme options. "system" follows the OS preference.

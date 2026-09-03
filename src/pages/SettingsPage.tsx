@@ -12,8 +12,12 @@ const modelIds = Object.keys(WHISPER_MODELS) as WhisperModelId[];
 export function SettingsPage() {
   const speechMode = useSettingsStore((state) => state.speechMode);
   const whisperModel = useSettingsStore((state) => state.whisperModel);
+  const analysisMode = useSettingsStore((state) => state.analysisMode);
+  const apiKey = useSettingsStore((state) => state.apiKey);
   const setSpeechMode = useSettingsStore((state) => state.setSpeechMode);
   const setWhisperModel = useSettingsStore((state) => state.setWhisperModel);
+  const setAnalysisMode = useSettingsStore((state) => state.setAnalysisMode);
+  const setApiKey = useSettingsStore((state) => state.setApiKey);
 
   return (
     <section className="space-y-8">
@@ -94,12 +98,75 @@ export function SettingsPage() {
         </p>
       </div>
 
-      <div className="space-y-2 rounded-xl border border-dashed border-border bg-surface p-6">
-        <h2 className="font-semibold text-text">API key</h2>
-        <p className="text-sm text-muted">
-          Style analysis runs with a mock provider by default. Bringing your own
-          API key arrives in Phase 3.
-        </p>
+      <div className="space-y-4 rounded-xl border border-border bg-surface p-6">
+        <h2 className="font-semibold text-text">Style analysis</h2>
+
+        <fieldset className="space-y-3">
+          <legend className="sr-only">Analysis mode</legend>
+          <label className="flex cursor-pointer gap-3 rounded-lg border border-border bg-bg p-3">
+            <input
+              type="radio"
+              name="analysis-mode"
+              value="mock"
+              checked={analysisMode === 'mock'}
+              onChange={() => setAnalysisMode('mock')}
+              className="mt-1"
+            />
+            <span className="space-y-1">
+              <span className="block text-sm font-medium text-text">
+                Demo analysis
+              </span>
+              <span className="block text-xs text-muted">
+                Returns a realistic sample profile with no API key, so the flow
+                works instantly.
+              </span>
+            </span>
+          </label>
+
+          <label className="flex cursor-pointer gap-3 rounded-lg border border-border bg-bg p-3">
+            <input
+              type="radio"
+              name="analysis-mode"
+              value="openai"
+              checked={analysisMode === 'openai'}
+              onChange={() => setAnalysisMode('openai')}
+              className="mt-1"
+            />
+            <span className="space-y-1">
+              <span className="block text-sm font-medium text-text">
+                Your own API key
+              </span>
+              <span className="block text-xs text-muted">
+                Analyzes your real responses with an OpenAI-compatible model.
+              </span>
+            </span>
+          </label>
+        </fieldset>
+
+        {analysisMode === 'openai' && (
+          <div className="space-y-2 border-t border-border pt-4">
+            <label
+              htmlFor="api-key"
+              className="block text-sm font-medium text-text"
+            >
+              API key
+            </label>
+            <input
+              id="api-key"
+              type="password"
+              value={apiKey}
+              onChange={(event) => setApiKey(event.target.value)}
+              placeholder="sk-..."
+              autoComplete="off"
+              className="w-full rounded-md border border-border bg-bg p-2 text-sm text-text"
+            />
+            <p className="text-xs text-muted">
+              Kept in memory for this session only and never written to storage.
+              Browser-side keys are fine for personal use but are not a secure
+              production setup.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
