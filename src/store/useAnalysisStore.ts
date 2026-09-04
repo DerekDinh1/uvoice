@@ -17,6 +17,10 @@ interface AnalysisStore {
   status: AnalysisStatus;
   error: string | null;
   analyze: (responses: Record<string, AssessmentResponse>) => Promise<void>;
+  // Replaces the profile with a manually edited one (Phase 4). Does not touch
+  // profileSignature: that signature reflects the responses a profile was
+  // generated from, not whether it has since been hand-edited.
+  updateProfile: (profile: StyleProfile) => void;
   reset: () => void;
 }
 
@@ -64,6 +68,8 @@ export const useAnalysisStore = create<AnalysisStore>()(
           });
         }
       },
+
+      updateProfile: (profile) => set({ profile }),
 
       reset: () =>
         set({
