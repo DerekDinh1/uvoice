@@ -48,4 +48,15 @@ describe('OpenAILLMProvider', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
     await expect(provider().complete(request)).rejects.toBeInstanceOf(LLMError);
   });
+
+  it('rejects when the response is ok but content is not a string', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ choices: [{ message: {} }] }),
+      }),
+    );
+    await expect(provider().complete(request)).rejects.toBeInstanceOf(LLMError);
+  });
 });

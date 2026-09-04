@@ -37,10 +37,19 @@ export function useTranscription(): UseTranscription {
   const getProvider = (): Promise<TranscriptionProvider> => {
     const key = `${speechMode}:${whisperModel}`;
     if (cacheRef.current?.key !== key) {
-      cacheRef.current = {
-        key,
-        provider: createTranscriptionProvider(speechMode, whisperModel),
-      };
+      const provider = createTranscriptionProvider(
+        speechMode,
+        whisperModel,
+      ).catch((caught: unknown) => {
+        // A rejected promise would otherwise stay cached forever, permanently
+        // blocking retries. Clear it so the next attempt rebuilds the
+        // provider, as long as the settings have not already moved on.
+        if (cacheRef.current?.key === key) {
+          cacheRef.current = null;
+        }
+        throw caught;
+      });
+      cacheRef.current = { key, provider };
     }
     return cacheRef.current.provider;
   };

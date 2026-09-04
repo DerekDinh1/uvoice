@@ -41,7 +41,7 @@ export const STORAGE_KEYS = {
 export const THEME_MODES = ['light', 'dark', 'system'] as const;
 export type ThemeMode = (typeof THEME_MODES)[number];
 
-// LLM settings are centralized here now but stay unused until Phase 3.
+// LLM settings used by the style-analysis pipeline (Phase 3).
 export const LLM_CONFIG = {
   defaultProvider: 'mock',
   apiBaseUrl: 'https://api.openai.com/v1',

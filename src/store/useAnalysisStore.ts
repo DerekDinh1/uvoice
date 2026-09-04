@@ -11,10 +11,26 @@ export type AnalysisStatus = 'idle' | 'analyzing' | 'ready' | 'error';
 
 interface AnalysisStore {
   profile: StyleProfile | null;
+  // A signature of the responses the profile was built from, so callers can
+  // tell when it has gone stale relative to the current answers.
+  profileSignature: string | null;
   status: AnalysisStatus;
   error: string | null;
   analyze: (responses: Record<string, AssessmentResponse>) => Promise<void>;
   reset: () => void;
+}
+
+// Cheap, deterministic signature of a set of responses. Used to detect when
+// answers changed since a profile was generated, without storing the answers
+// themselves a second time. Lives here (not on useAppStore) so the assessment
+// store never has to know about analysis.
+export function computeResponsesSignature(
+  responses: Record<string, AssessmentResponse>,
+): string {
+  return Object.keys(responses)
+    .sort()
+    .map((id) => `${id}:${responses[id].text.trim().length}`)
+    .join('|');
 }
 
 // Holds the generated profile (persisted) plus transient analysis status. The
@@ -23,6 +39,7 @@ export const useAnalysisStore = create<AnalysisStore>()(
   persist(
     (set) => ({
       profile: null,
+      profileSignature: null,
       status: 'idle',
       error: null,
 
@@ -32,7 +49,11 @@ export const useAnalysisStore = create<AnalysisStore>()(
         const provider = createLLMProvider(analysisMode, { apiKey });
         try {
           const profile = await analyzeStyle(responses, provider);
-          set({ profile, status: 'ready' });
+          set({
+            profile,
+            status: 'ready',
+            profileSignature: computeResponsesSignature(responses),
+          });
         } catch (caught) {
           set({
             status: 'error',
@@ -44,14 +65,24 @@ export const useAnalysisStore = create<AnalysisStore>()(
         }
       },
 
-      reset: () => set({ profile: null, status: 'idle', error: null }),
+      reset: () =>
+        set({
+          profile: null,
+          profileSignature: null,
+          status: 'idle',
+          error: null,
+        }),
     }),
     {
       name: STORAGE_KEYS.analysis,
       version: SCHEMA_VERSIONS.analysis,
       storage: createJSONStorage(() => localStorage),
-      // Persist the profile only; status and error are per-session.
-      partialize: (state) => ({ profile: state.profile }),
+      // Persist the profile and its signature only; status and error are
+      // per-session.
+      partialize: (state) => ({
+        profile: state.profile,
+        profileSignature: state.profileSignature,
+      }),
     },
   ),
 );
