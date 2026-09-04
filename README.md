@@ -1,4 +1,4 @@
-# 🧭 Prompt Architect
+# 🧭 Uvoice
 
 **Discover how you naturally write, then turn it into a reusable AI system prompt.**
 
@@ -7,13 +7,13 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
 
-Prompt Architect interviews you with a short set of writing exercises, analyzes
+Uvoice interviews you with a short set of writing exercises, analyzes
 your natural style, and generates a Markdown system prompt you can hand to any AI
 assistant so its replies sound like you. Everything runs in the browser.
 
-> **Status:** built in reviewed phases. The assessment engine, theming, and
-> local voice input are live today; style analysis and prompt generation are on
-> the [roadmap](#-roadmap) below.
+> **Status:** built in reviewed phases. The assessment, local voice input, style
+> analysis, the editable profile, and prompt generation are live today.
+> Evaluation and polish are on the [roadmap](#-roadmap) below.
 
 ## ✨ Highlights
 
@@ -113,9 +113,9 @@ renamed.
 - Phase 1: Project Foundation [COMPLETE]
 - Phase 2: Assessment Engine [COMPLETE]
 - Phase 2.5: Local Speech Recognition [COMPLETE]
-- Phase 3: Style Analysis [PLANNED]
-- Phase 4: Style Profile UI [PLANNED]
-- Phase 5: Prompt Generator [PLANNED]
+- Phase 3: Style Analysis [COMPLETE]
+- Phase 4: Style Profile UI [COMPLETE]
+- Phase 5: Prompt Generator [COMPLETE]
 - Phase 6: Evaluation Loop [PLANNED]
 - Phase 7: Refinement [PLANNED]
 - Phase 8: Production Polish [PLANNED]

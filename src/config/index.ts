@@ -1,7 +1,7 @@
 // Central configuration. No string literals for routes, storage keys, model
 // names, theme, speech, or scale semantics should live anywhere else.
 
-export const APP_NAME = 'Prompt Architect';
+export const APP_NAME = 'Uvoice';
 
 export const ROUTES = {
   welcome: '/',
@@ -31,10 +31,10 @@ export const SCHEMA_VERSIONS = {
 // Every LocalStorage key the app uses. The API key is stored under its own key,
 // separate from app state, and only when the user opts in (Phase 3).
 export const STORAGE_KEYS = {
-  appState: 'prompt-architect:state',
-  theme: 'prompt-architect:theme',
-  settings: 'prompt-architect:settings',
-  analysis: 'prompt-architect:analysis',
+  appState: 'uvoice:state',
+  theme: 'uvoice:theme',
+  settings: 'uvoice:settings',
+  analysis: 'uvoice:analysis',
 } as const;
 
 // Theme options. "system" follows the OS preference.
