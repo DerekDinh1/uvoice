@@ -1,5 +1,6 @@
 import { THEME_MODES, type ThemeMode } from '../../config';
 import { useThemeStore } from '../../store/useThemeStore';
+import { FOCUS_RING } from './focusRing';
 
 const LABELS: Record<ThemeMode, string> = {
   light: 'Light',
@@ -23,7 +24,7 @@ export function ThemeToggle() {
           type="button"
           onClick={() => setMode(option)}
           aria-pressed={mode === option}
-          className={`flex-1 rounded px-2 py-1 font-medium transition-colors ${
+          className={`flex-1 rounded px-2 py-1 font-medium transition-colors ${FOCUS_RING} ${
             mode === option
               ? 'bg-accent text-accent-fg'
               : 'text-muted hover:text-text'

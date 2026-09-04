@@ -28,7 +28,7 @@ export function QuestionCard({ question }: QuestionCardProps) {
         </h2>
         <p className="text-muted">{question.prompt}</p>
         {question.suggestedLength && (
-          <p className="text-sm text-muted opacity-80">
+          <p className="text-sm text-muted">
             Suggested length: {question.suggestedLength}
           </p>
         )}

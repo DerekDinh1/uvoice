@@ -2,7 +2,7 @@
 // colour stay consistent across the app instead of being retyped per component.
 
 export const BUTTON_BASE =
-  'rounded-md text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40';
+  'rounded-md text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg';
 
 export const BUTTON_VARIANTS = {
   primary: 'bg-accent text-accent-fg hover:opacity-90',
