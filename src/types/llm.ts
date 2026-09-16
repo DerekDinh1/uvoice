@@ -6,6 +6,10 @@ export type LLMProviderMode = (typeof LLM_PROVIDER_MODES)[number];
 export interface LLMRequest {
   system: string;
   user: string;
+  // Optional hint about what the request is for. Only the mock provider
+  // branches on it, so it can return a plausible response for each stage of
+  // the pipeline without a real model; real providers ignore it.
+  purpose?: 'analysis' | 'generation' | 'evaluation';
 }
 
 export interface LLMProvider {

@@ -4,6 +4,7 @@ import { useAnalysisStore } from '../store/useAnalysisStore';
 import { ROUTES } from '../config';
 import { generatePrompts } from '../services/promptGenerator';
 import { PromptPreview } from '../components/prompt/PromptPreview';
+import { EvaluationPanel } from '../components/evaluation/EvaluationPanel';
 
 // Turns the current writing-style profile into a system prompt and a
 // readable summary, both regenerated live from the store so profile edits
@@ -66,6 +67,8 @@ export function PromptPage() {
         content={generated.styleProfileDoc}
         filename="style-profile.md"
       />
+
+      <EvaluationPanel profile={profile} />
     </section>
   );
 }

@@ -26,6 +26,7 @@ export const SCHEMA_VERSIONS = {
   settings: 1,
   theme: 1,
   analysis: 1,
+  evaluation: 1,
 } as const;
 
 // Every LocalStorage key the app uses. The API key is stored under its own key,
@@ -35,6 +36,7 @@ export const STORAGE_KEYS = {
   theme: 'uvoice:theme',
   settings: 'uvoice:settings',
   analysis: 'uvoice:analysis',
+  evaluation: 'uvoice:evaluation',
 } as const;
 
 // Theme options. "system" follows the OS preference.

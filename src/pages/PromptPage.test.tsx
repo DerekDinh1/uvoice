@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { PromptPage } from './PromptPage';
 import { useAnalysisStore } from '../store/useAnalysisStore';
+import { useEvaluationStore } from '../store/useEvaluationStore';
 import type { StyleProfile } from '../types/styleProfile';
 
 const sampleProfile: StyleProfile = {
@@ -49,6 +50,12 @@ beforeEach(() => {
   useAnalysisStore.setState({
     profile: null,
     profileSignature: null,
+    status: 'idle',
+    error: null,
+  });
+  useEvaluationStore.setState({
+    sample: null,
+    result: null,
     status: 'idle',
     error: null,
   });
@@ -112,5 +119,20 @@ describe('PromptPage', () => {
         screen.getByRole('button', { name: 'Copy system prompt' }).textContent,
       ).toBe('Copied'),
     );
+  });
+
+  it('shows the evaluate control when a profile exists', () => {
+    useAnalysisStore.setState({
+      profile: sampleProfile,
+      profileSignature: 'sig',
+      status: 'ready',
+      error: null,
+    });
+
+    renderPage();
+
+    expect(
+      screen.getByRole('button', { name: 'Generate a sample and score it' }),
+    ).toBeTruthy();
   });
 });

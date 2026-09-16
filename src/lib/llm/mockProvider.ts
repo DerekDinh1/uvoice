@@ -1,7 +1,22 @@
 import type { LLMProvider, LLMRequest } from '../../types/llm';
 import type { StyleProfile } from '../../types/styleProfile';
+import { STYLE_DIMENSIONS } from '../../types/styleProfile';
+import type { EvaluationResult } from '../../types/evaluation';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// A short, plain paragraph returned for every generation request. It is not
+// tailored to the task text, only realistic and deterministic, so the sample
+// and evaluation stages work offline the same way the analysis stage does.
+const SAMPLE_TEXT = [
+  'Code review matters because a second reader catches mistakes the author',
+  'missed, from a typo in a comment to a real bug in the logic. It also',
+  'spreads knowledge across the team, so no single person is the only one',
+  'who understands a piece of code. A good review stays specific: point out',
+  'the exact line, explain why it matters, and suggest a fix instead of a',
+  'vague complaint. Skipping this step to save time now usually costs more',
+  'time later, once the issue reaches users.',
+].join(' ');
 
 // Realistic sample analysis so the whole pipeline works with no API key. A few
 // numbers are nudged by the length of the samples so different assessments do
@@ -12,8 +27,13 @@ export class MockLLMProvider implements LLMProvider {
   async complete(request: LLMRequest): Promise<string> {
     await delay(250);
 
-    const chars = request.user.length;
-    const verbosity = Math.max(20, Math.min(90, Math.round(chars / 40)));
+    if (request.purpose === 'generation') {
+      return SAMPLE_TEXT;
+    }
+
+    if (request.purpose === 'evaluation') {
+      return JSON.stringify(this.buildEvaluation(request.user));
+    }
 
     const profile: StyleProfile = {
       voice: ['Direct', 'Conversational', 'Analytical'],
@@ -21,7 +41,7 @@ export class MockLLMProvider implements LLMProvider {
       directness: 78,
       formality: 42,
       technicalDepth: 70,
-      verbosity,
+      verbosity: this.verbosityFor(request.user),
       humor: 35,
       empathy: 60,
       hedging: 28,
@@ -59,5 +79,39 @@ export class MockLLMProvider implements LLMProvider {
     };
 
     return JSON.stringify(profile);
+  }
+
+  private verbosityFor(userText: string): number {
+    const chars = userText.length;
+    return Math.max(20, Math.min(90, Math.round(chars / 40)));
+  }
+
+  // Deterministic, schema-valid evaluation. The overall score and per-dimension
+  // scores are nudged by the length of the evaluated request so different
+  // profiles and samples do not all score identically.
+  private buildEvaluation(userText: string): EvaluationResult {
+    const chars = userText.length;
+    const base = Math.max(55, Math.min(92, Math.round(chars / 25)));
+
+    const dimensions = STYLE_DIMENSIONS.map((dimension, index) => ({
+      name: dimension.label,
+      score: Math.max(0, Math.min(100, base - index * 3)),
+      feedback: `The sample's ${dimension.label.toLowerCase()} is close to the target, with a little room to tighten it.`,
+    }));
+
+    return {
+      overallScore: base,
+      dimensions,
+      issues: [
+        'A couple of sentences run longer than the target verbosity.',
+        'One passage hedges more than the profile calls for.',
+        'The opening line eases in instead of leading with the point.',
+      ],
+      recommendations: [
+        'Trim the longest sentence into two shorter ones.',
+        'Replace soft qualifiers with a direct statement where the profile prefers confidence.',
+        'Move the main conclusion to the first sentence of each section.',
+      ],
+    };
   }
 }
