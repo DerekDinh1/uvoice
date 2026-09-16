@@ -4,6 +4,8 @@ import { useAnalysisStore } from '../store/useAnalysisStore';
 import { ROUTES } from '../config';
 import { ProfileView } from '../components/profile/ProfileView';
 import { ProfileEditor } from '../components/profile/ProfileEditor';
+import { ReanalyzeControl } from '../components/profile/ReanalyzeControl';
+import { VersionHistoryPanel } from '../components/profile/VersionHistoryPanel';
 
 type Mode = 'view' | 'edit';
 
@@ -54,5 +56,11 @@ export function ProfilePage() {
     );
   }
 
-  return <ProfileView profile={profile} onEdit={() => setMode('edit')} />;
+  return (
+    <div className="space-y-8">
+      <ProfileView profile={profile} onEdit={() => setMode('edit')} />
+      <ReanalyzeControl />
+      <VersionHistoryPanel />
+    </div>
+  );
 }

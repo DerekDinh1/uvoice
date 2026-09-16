@@ -47,7 +47,13 @@ const sampleProfile: StyleProfile = {
 
 beforeEach(() => {
   localStorage.clear();
-  useAnalysisStore.setState({ profile: null, status: 'idle', error: null });
+  useAnalysisStore.setState({
+    profile: null,
+    profileSignature: null,
+    versions: [],
+    status: 'idle',
+    error: null,
+  });
   useSettingsStore.setState({ analysisMode: 'mock', apiKey: '' });
 });
 
@@ -99,6 +105,116 @@ describe('useAnalysisStore', () => {
         localStorage.getItem(STORAGE_KEYS.analysis) ?? '{}',
       );
       expect(stored.state.profile.voice).toEqual(['Blunt']);
+    });
+  });
+
+  describe('version history', () => {
+    it('pushes an "analyzed" version when analyze succeeds', async () => {
+      await useAnalysisStore.getState().analyze(responses);
+
+      const state = useAnalysisStore.getState();
+      expect(state.versions).toHaveLength(1);
+      expect(state.versions[0].source).toBe('analyzed');
+      expect(state.versions[0].profile).toEqual(state.profile);
+    });
+
+    it('pushes an "edited" version when updateProfile is called', () => {
+      useAnalysisStore.setState({
+        profile: sampleProfile,
+        profileSignature: 'sig',
+        versions: [],
+      });
+
+      const edited: StyleProfile = { ...sampleProfile, formality: 90 };
+      useAnalysisStore.getState().updateProfile(edited);
+
+      const state = useAnalysisStore.getState();
+      expect(state.versions).toHaveLength(1);
+      expect(state.versions[0].source).toBe('edited');
+      expect(state.versions[0].profile).toEqual(edited);
+    });
+
+    it('caps the version list at 10, newest first, dropping the oldest', () => {
+      useAnalysisStore.setState({ profile: sampleProfile, versions: [] });
+
+      for (let i = 0; i < 11; i += 1) {
+        useAnalysisStore
+          .getState()
+          .updateProfile({ ...sampleProfile, directness: i });
+      }
+
+      const state = useAnalysisStore.getState();
+      expect(state.versions).toHaveLength(10);
+      // The most recent update is at the front; the very first update (0) was
+      // pushed out once the cap was exceeded.
+      expect(state.versions[0].profile.directness).toBe(10);
+      expect(
+        state.versions.some((version) => version.profile.directness === 0),
+      ).toBe(false);
+      expect(state.versions[state.versions.length - 1].profile.directness).toBe(
+        1,
+      );
+    });
+
+    it('restoreVersion sets the profile and adds a "restored" version without touching profileSignature', () => {
+      const older: StyleProfile = { ...sampleProfile, directness: 10 };
+      const newer: StyleProfile = { ...sampleProfile, directness: 90 };
+      useAnalysisStore.setState({
+        profile: newer,
+        profileSignature: 'sig',
+        versions: [
+          { id: 'v2', createdAt: 2, source: 'edited', profile: newer },
+          { id: 'v1', createdAt: 1, source: 'analyzed', profile: older },
+        ],
+      });
+
+      useAnalysisStore.getState().restoreVersion('v1');
+
+      const state = useAnalysisStore.getState();
+      expect(state.profile).toEqual(older);
+      expect(state.profileSignature).toBe('sig');
+      expect(state.versions).toHaveLength(3);
+      expect(state.versions[0].source).toBe('restored');
+      expect(state.versions[0].profile).toEqual(older);
+    });
+
+    it('does nothing when restoring an unknown id', () => {
+      useAnalysisStore.setState({
+        profile: sampleProfile,
+        profileSignature: 'sig',
+        versions: [
+          {
+            id: 'v1',
+            createdAt: 1,
+            source: 'analyzed',
+            profile: sampleProfile,
+          },
+        ],
+      });
+
+      useAnalysisStore.getState().restoreVersion('missing');
+
+      const state = useAnalysisStore.getState();
+      expect(state.profile).toEqual(sampleProfile);
+      expect(state.versions).toHaveLength(1);
+    });
+
+    it('reset clears the version history', () => {
+      useAnalysisStore.setState({
+        profile: sampleProfile,
+        versions: [
+          {
+            id: 'v1',
+            createdAt: 1,
+            source: 'analyzed',
+            profile: sampleProfile,
+          },
+        ],
+      });
+
+      useAnalysisStore.getState().reset();
+
+      expect(useAnalysisStore.getState().versions).toEqual([]);
     });
   });
 });
