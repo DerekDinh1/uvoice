@@ -9,8 +9,25 @@ interface PromptPreviewProps {
   filename: string;
 }
 
-// How long the Copy button shows "Copied" before reverting.
-const COPIED_RESET_MS = 2000;
+// How long the Copy/Download buttons show their confirmation label before
+// reverting.
+const CONFIRMATION_RESET_MS = 2000;
+
+// Selects the full contents of the preview <pre>, so a failed clipboard copy
+// still leaves the user able to copy manually with Ctrl/Cmd+C.
+function selectPreContents(pre: HTMLPreElement): void {
+  try {
+    const selection = window.getSelection?.();
+    if (!selection) return;
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  } catch {
+    // Selection is a best-effort fallback; a failure here should not mask
+    // the copy error itself.
+  }
+}
 
 // One generated document (the system prompt or the style-profile doc), shown
 // as a scrollable monospace preview with buttons to copy it to the clipboard
@@ -22,24 +39,55 @@ export function PromptPreview({
   filename,
 }: PromptPreviewProps) {
   const [copied, setCopied] = useState(false);
-  const resetTimer = useRef<ReturnType<typeof setTimeout>>();
+  const [copyError, setCopyError] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
+  const [downloadError, setDownloadError] = useState(false);
+  const preRef = useRef<HTMLPreElement>(null);
+  const copyResetTimer = useRef<ReturnType<typeof setTimeout>>();
+  const downloadResetTimer = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     return () => {
-      if (resetTimer.current) clearTimeout(resetTimer.current);
+      if (copyResetTimer.current) clearTimeout(copyResetTimer.current);
+      if (downloadResetTimer.current) clearTimeout(downloadResetTimer.current);
     };
   }, []);
 
-  const handleCopy = () => {
-    void navigator.clipboard.writeText(content).then(() => {
+  // Copy is the app's primary action here, so a failure must never be silent:
+  // guard against browsers (or insecure contexts) with no Clipboard API, and
+  // fall back to selecting the text so the user can still copy it by hand.
+  const handleCopy = async () => {
+    setCopyError(false);
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error('Clipboard API unavailable');
+      }
+      await navigator.clipboard.writeText(content);
       setCopied(true);
-      if (resetTimer.current) clearTimeout(resetTimer.current);
-      resetTimer.current = setTimeout(() => setCopied(false), COPIED_RESET_MS);
-    });
+      if (copyResetTimer.current) clearTimeout(copyResetTimer.current);
+      copyResetTimer.current = setTimeout(
+        () => setCopied(false),
+        CONFIRMATION_RESET_MS,
+      );
+    } catch {
+      setCopyError(true);
+      if (preRef.current) selectPreContents(preRef.current);
+    }
   };
 
   const handleDownload = () => {
-    downloadTextFile(filename, content);
+    setDownloadError(false);
+    const succeeded = downloadTextFile(filename, content);
+    if (!succeeded) {
+      setDownloadError(true);
+      return;
+    }
+    setDownloaded(true);
+    if (downloadResetTimer.current) clearTimeout(downloadResetTimer.current);
+    downloadResetTimer.current = setTimeout(
+      () => setDownloaded(false),
+      CONFIRMATION_RESET_MS,
+    );
   };
 
   return (
@@ -64,11 +112,24 @@ export function PromptPreview({
             aria-label={`Download ${title.toLowerCase()}`}
             className={buttonClass('outline')}
           >
-            Download
+            {downloaded ? 'Downloaded' : 'Download'}
           </button>
         </div>
       </div>
-      <pre className="max-h-96 overflow-auto rounded-md border border-border bg-bg p-4 text-xs text-text">
+      {copyError && (
+        <p role="alert" className="text-sm text-danger">
+          Could not copy. Select the text and copy manually.
+        </p>
+      )}
+      {downloadError && (
+        <p role="alert" className="text-sm text-danger">
+          Could not download. Copy the text instead.
+        </p>
+      )}
+      <pre
+        ref={preRef}
+        className="max-h-96 overflow-auto rounded-md border border-border bg-bg p-4 text-xs text-text"
+      >
         <code className="block w-max min-w-full whitespace-pre">{content}</code>
       </pre>
     </div>

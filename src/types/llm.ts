@@ -10,6 +10,12 @@ export interface LLMRequest {
   // branches on it, so it can return a plausible response for each stage of
   // the pipeline without a real model; real providers ignore it.
   purpose?: 'analysis' | 'generation' | 'evaluation';
+  // What shape the response should take. Analysis and evaluation need
+  // structured JSON; generation needs a prose sample. Providers that support
+  // forcing a response shape (e.g. OpenAI's JSON mode) should only do so for
+  // 'json', since forcing it on a prose task rejects the request. Undefined
+  // is treated as 'json' to match the historical default.
+  responseFormat?: 'json' | 'text';
 }
 
 export interface LLMProvider {

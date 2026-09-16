@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { StyleProfile } from '../../types/styleProfile';
 import { STYLE_DIMENSIONS, styleProfileSchema } from '../../types/styleProfile';
 import { buttonClass } from '../ui/buttonStyles';
+import { FOCUS_RING } from '../layout/focusRing';
 import { ScoreSlider } from './ScoreSlider';
 import { EditableTagList } from './EditableTagList';
 import { TextField } from './TextField';
@@ -23,6 +24,14 @@ export function ProfileEditor({
 }: ProfileEditorProps) {
   const [draft, setDraft] = useState<StyleProfile>(profile);
   const [error, setError] = useState<string | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  // Swapping ProfileView and ProfileEditor within the /profile route does not
+  // trigger the route-based focus manager (it only fires on a path change),
+  // so focus would otherwise drop to <body>. Move it into the editor instead.
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
 
   function handleSave() {
     const result = styleProfileSchema.safeParse(draft);
@@ -56,7 +65,11 @@ export function ProfileEditor({
     <section className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight text-text">
+          <h1
+            ref={headingRef}
+            tabIndex={-1}
+            className={`rounded-md text-2xl font-semibold tracking-tight text-text ${FOCUS_RING}`}
+          >
             Edit profile
           </h1>
           <p className="max-w-xl text-muted">

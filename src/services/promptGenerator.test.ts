@@ -92,6 +92,27 @@ describe('generateSystemPrompt', () => {
     expect(text.toLowerCase()).toContain('flag uncertainty explicitly');
   });
 
+  it('states vocabulary complexity as a clean colon line, not a mid-sentence splice', () => {
+    const text = generateSystemPrompt(baseProfile);
+    expect(text).toContain(
+      `Vocabulary complexity: ${baseProfile.vocabulary.complexity}.`,
+    );
+    expect(text).not.toMatch(/is .* in complexity/);
+  });
+
+  it('states sentence style fields as clean colon lines', () => {
+    const text = generateSystemPrompt(baseProfile);
+    expect(text).toContain(
+      `Typical sentence length: ${baseProfile.sentenceStyle.typicalLength}.`,
+    );
+    expect(text).toContain(
+      `Sentence complexity: ${baseProfile.sentenceStyle.complexity}.`,
+    );
+    expect(text).toContain(
+      `Sentence rhythm: ${baseProfile.sentenceStyle.rhythm}.`,
+    );
+  });
+
   it('never contains an em dash or en dash', () => {
     const text = generateSystemPrompt(baseProfile);
     expect(text).not.toMatch(/[—–]/);

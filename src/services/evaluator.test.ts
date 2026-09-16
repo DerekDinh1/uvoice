@@ -4,6 +4,7 @@ import { MockLLMProvider } from '../lib/llm/mockProvider';
 import { LLMError } from '../types/llm';
 import type { LLMProvider, LLMRequest } from '../types/llm';
 import type { StyleProfile } from '../types/styleProfile';
+import type { EvaluationResult } from '../types/evaluation';
 
 const profile: StyleProfile = {
   voice: ['Direct'],
@@ -81,5 +82,28 @@ describe('evaluateSample', () => {
       evaluateSample(profile, 'a sample.', garbage),
     ).rejects.toBeInstanceOf(EvaluationError);
     expect(calls).toBe(2);
+  });
+
+  it('recovers when the retry returns a valid evaluation', async () => {
+    const validResult: EvaluationResult = {
+      overallScore: 75,
+      dimensions: [{ name: 'Directness', score: 80, feedback: 'Close.' }],
+      issues: ['Minor issue.'],
+      recommendations: ['Small fix.'],
+    };
+    let calls = 0;
+    const recovers: LLMProvider = {
+      id: 'mock',
+      complete: () => {
+        calls++;
+        return Promise.resolve(
+          calls === 1 ? 'not json at all' : JSON.stringify(validResult),
+        );
+      },
+    };
+    const result = await evaluateSample(profile, 'a sample.', recovers);
+    expect(calls).toBe(2);
+    expect(result.overallScore).toBe(validResult.overallScore);
+    expect(result.dimensions).toEqual(validResult.dimensions);
   });
 });

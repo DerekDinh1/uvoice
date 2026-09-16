@@ -157,8 +157,8 @@ const BOOLEAN_FIELDS: BooleanFieldConfig[] = [
 // changed, with no side effects.
 export function profileDiff(a: StyleProfile, b: StyleProfile): ProfileDiff {
   const scores: ScoreDelta[] = STYLE_DIMENSIONS.map((dimension) => {
-    const before = a[dimension.key] as number;
-    const after = b[dimension.key] as number;
+    const before = a[dimension.key];
+    const after = b[dimension.key];
     return {
       key: dimension.key,
       label: dimension.label,

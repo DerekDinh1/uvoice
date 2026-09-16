@@ -25,6 +25,15 @@ export function VersionHistoryPanel() {
 
   const [fromId, setFromId] = useState<string | null>(null);
   const [toId, setToId] = useState<string | null>(null);
+  // Tracks the fresh 'restored' entry created by the most recent restore, so
+  // the list can call out which version is now current. Restoring's only
+  // other visible effect is ProfileView, above this panel, which can be
+  // off-screen on mobile, so this also drives the aria-live confirmation
+  // below. The badge below only shows while that entry is still versions[0]:
+  // a later analysis or edit pushes a new head, and the restored entry is no
+  // longer current even though it is still the one this component remembers.
+  const [restoredId, setRestoredId] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState('');
 
   if (versions.length === 0) {
     return (
@@ -51,6 +60,16 @@ export function VersionHistoryPanel() {
     ? profileDiff(fromVersion.profile, toVersion.profile)
     : null;
 
+  const handleRestore = (id: string, createdAt: number) => {
+    restoreVersion(id);
+    // restoreVersion prepends a fresh 'restored' entry, so the version that
+    // is now current is the new versions[0], not the one that was clicked.
+    const current = useAnalysisStore.getState().versions[0];
+    setRestoredId(current?.id ?? null);
+    setAnnouncement(`Restored the version from ${formatTimestamp(createdAt)}.`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="space-y-6 rounded-xl border border-border bg-surface p-6">
       <div className="space-y-1">
@@ -59,6 +78,10 @@ export function VersionHistoryPanel() {
           Every analysis, edit, and restore is saved here. Compare two versions
           or bring an older one back.
         </p>
+      </div>
+
+      <div aria-live="polite" role="status" className="sr-only">
+        {announcement}
       </div>
 
       {canCompare && (
@@ -122,13 +145,20 @@ export function VersionHistoryPanel() {
               <p className="text-sm font-medium text-text">
                 {formatTimestamp(version.createdAt)}
               </p>
-              <span className="inline-block rounded-full bg-bg px-2 py-0.5 text-xs font-medium text-muted">
-                {SOURCE_LABELS[version.source]}
+              <span className="inline-flex flex-wrap gap-1.5">
+                <span className="inline-block rounded-full bg-bg px-2 py-0.5 text-xs font-medium text-muted">
+                  {SOURCE_LABELS[version.source]}
+                </span>
+                {version.id === restoredId && version.id === versions[0].id && (
+                  <span className="inline-block rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-fg">
+                    Current
+                  </span>
+                )}
               </span>
             </div>
             <button
               type="button"
-              onClick={() => restoreVersion(version.id)}
+              onClick={() => handleRestore(version.id, version.createdAt)}
               className={buttonClass('outline', 'px-3 py-1.5')}
             >
               Restore

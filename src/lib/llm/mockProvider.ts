@@ -18,6 +18,50 @@ const SAMPLE_TEXT = [
   'time later, once the issue reaches users.',
 ].join(' ');
 
+// Per-dimension evaluation feedback, grouped by score bucket so a low score
+// reads as a problem and a high score reads as a pass, and varied by a few
+// phrasings per bucket so the feedback grid does not read as one template
+// with the label swapped in. Selection is deterministic: it only depends on
+// the dimension's score and its position in STYLE_DIMENSIONS.
+type ScoreBucket = 'low' | 'mid' | 'high';
+
+function scoreBucket(score: number): ScoreBucket {
+  if (score <= 33) return 'low';
+  if (score <= 66) return 'mid';
+  return 'high';
+}
+
+const FEEDBACK_TEMPLATES: Record<
+  ScoreBucket,
+  Array<(label: string) => string>
+> = {
+  high: [
+    (label) => `The sample's ${label} matches the target closely.`,
+    (label) => `The sample stays right on target for ${label}.`,
+    (label) => `The sample handles ${label} the way the profile calls for.`,
+  ],
+  mid: [
+    (label) => `The sample's ${label} is close, with a little room to tighten.`,
+    (label) =>
+      `The sample is in the right range for ${label}, but not fully dialed in.`,
+    (label) =>
+      `The sample's ${label} is close to the target and could use a small nudge.`,
+  ],
+  low: [
+    (label) =>
+      `The sample's ${label} drifts from the target and needs attention.`,
+    (label) => `The sample falls short on ${label} and should be reworked.`,
+    (label) =>
+      `The sample's ${label} misses the target by a noticeable margin.`,
+  ],
+};
+
+function feedbackFor(label: string, score: number, index: number): string {
+  const templates = FEEDBACK_TEMPLATES[scoreBucket(score)];
+  const template = templates[index % templates.length];
+  return template(label.toLowerCase());
+}
+
 // Realistic sample analysis so the whole pipeline works with no API key. A few
 // numbers are nudged by the length of the samples so different assessments do
 // not all look identical, while staying deterministic and schema-valid.
@@ -93,11 +137,14 @@ export class MockLLMProvider implements LLMProvider {
     const chars = userText.length;
     const base = Math.max(55, Math.min(92, Math.round(chars / 25)));
 
-    const dimensions = STYLE_DIMENSIONS.map((dimension, index) => ({
-      name: dimension.label,
-      score: Math.max(0, Math.min(100, base - index * 3)),
-      feedback: `The sample's ${dimension.label.toLowerCase()} is close to the target, with a little room to tighten it.`,
-    }));
+    const dimensions = STYLE_DIMENSIONS.map((dimension, index) => {
+      const score = Math.max(0, Math.min(100, base - index * 3));
+      return {
+        name: dimension.label,
+        score,
+        feedback: feedbackFor(dimension.label, score, index),
+      };
+    });
 
     return {
       overallScore: base,

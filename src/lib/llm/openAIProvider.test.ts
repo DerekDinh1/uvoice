@@ -59,4 +59,48 @@ describe('OpenAILLMProvider', () => {
     );
     await expect(provider().complete(request)).rejects.toBeInstanceOf(LLMError);
   });
+
+  it('requests JSON mode when responseFormat is json', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({ choices: [{ message: { content: '{}' } }] }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await provider().complete({ ...request, responseFormat: 'json' });
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(body.response_format).toEqual({ type: 'json_object' });
+  });
+
+  it('requests JSON mode when responseFormat is left unset', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({ choices: [{ message: { content: '{}' } }] }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await provider().complete(request);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(body.response_format).toEqual({ type: 'json_object' });
+  });
+
+  it('omits response_format when responseFormat is text', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          choices: [{ message: { content: 'a prose sample' } }],
+        }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await provider().complete({ ...request, responseFormat: 'text' });
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(body).not.toHaveProperty('response_format');
+  });
 });

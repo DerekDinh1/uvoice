@@ -16,5 +16,6 @@ export function buildSamplePrompt(
     system: systemPrompt,
     user: task,
     purpose: 'generation',
+    responseFormat: 'text',
   };
 }

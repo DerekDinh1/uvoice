@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { APP_NAME, ROUTES } from '../../config';
 import { NavBar, NavLinks } from './NavBar';
@@ -11,6 +11,10 @@ interface AppShellProps {
 
 const brandLinkClass = `rounded-md text-lg font-semibold tracking-tight text-text ${FOCUS_RING}`;
 
+// Hidden until focused, then pinned to the corner so keyboard users can jump
+// straight past the nav to the page content instead of tabbing through it.
+const skipLinkClass = `sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-accent-fg ${FOCUS_RING}`;
+
 // Two-column app frame: a fixed sidebar with primary navigation and a scrollable
 // content area. Below the md breakpoint the sidebar is replaced by a top bar
 // with a disclosure menu, since a fixed 240px sidebar does not fit a phone
@@ -18,6 +22,7 @@ const brandLinkClass = `rounded-md text-lg font-semibold tracking-tight text-tex
 export function AppShell({ children }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const location = useLocation();
+  const mobileNavToggleRef = useRef<HTMLButtonElement>(null);
 
   // Close the mobile menu on any navigation (link click, back/forward, etc.)
   // so it never stays open over the newly loaded screen.
@@ -25,13 +30,41 @@ export function AppShell({ children }: AppShellProps) {
     setMobileNavOpen(false);
   }, [location.pathname]);
 
+  // Let Escape dismiss the mobile disclosure too, same as any other transient
+  // panel, and send focus back to the toggle that opened it.
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return;
+      setMobileNavOpen(false);
+      mobileNavToggleRef.current?.focus();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [mobileNavOpen]);
+
   return (
     <div className="flex min-h-screen flex-col bg-bg text-text md:flex-row">
+      <a
+        href="#main-content"
+        onClick={(event) => {
+          // HashRouter reads the URL hash for routing, so letting this link
+          // navigate normally would change the route instead of just moving
+          // focus. Handle it manually and skip the default navigation.
+          event.preventDefault();
+          document.getElementById('main-content')?.focus();
+        }}
+        className={skipLinkClass}
+      >
+        Skip to main content
+      </a>
+
       <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 md:hidden">
         <NavLink to={ROUTES.welcome} className={brandLinkClass}>
           {APP_NAME}
         </NavLink>
         <button
+          ref={mobileNavToggleRef}
           type="button"
           onClick={() => setMobileNavOpen((open) => !open)}
           aria-expanded={mobileNavOpen}

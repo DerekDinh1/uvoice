@@ -40,5 +40,5 @@ export function buildEvaluationPrompt(
     sample,
   ].join('\n');
 
-  return { system, user, purpose: 'evaluation' };
+  return { system, user, purpose: 'evaluation', responseFormat: 'json' };
 }

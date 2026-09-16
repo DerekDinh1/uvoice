@@ -114,9 +114,9 @@ export function generateSystemPrompt(profile: StyleProfile): string {
     [
       '## Sentence Structure',
       pick(profile.verbosity, VERBOSITY),
-      `Keep sentences at a typical length of: ${profile.sentenceStyle.typicalLength}.`,
-      `Match a sentence complexity of: ${profile.sentenceStyle.complexity}.`,
-      `Give sentences a rhythm of: ${profile.sentenceStyle.rhythm}.`,
+      `Typical sentence length: ${profile.sentenceStyle.typicalLength}.`,
+      `Sentence complexity: ${profile.sentenceStyle.complexity}.`,
+      `Sentence rhythm: ${profile.sentenceStyle.rhythm}.`,
     ].join('\n'),
   );
 
@@ -124,7 +124,7 @@ export function generateSystemPrompt(profile: StyleProfile): string {
     [
       '## Vocabulary',
       pick(profile.technicalDepth, TECHNICAL_DEPTH),
-      `Use vocabulary that is ${profile.vocabulary.complexity} in complexity.`,
+      `Vocabulary complexity: ${profile.vocabulary.complexity}.`,
       `Jargon use: ${profile.vocabulary.jargon}.`,
       profile.vocabulary.preferences.length > 0
         ? `Favor these words and phrases where natural: ${profile.vocabulary.preferences.join(', ')}.`

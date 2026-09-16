@@ -2,12 +2,10 @@
 // transcription is the pluggable ML step (see TranscriptionProvider). Keeping
 // them separate mirrors the LLM provider split.
 
+import type { SpeechProviderMode } from '../config';
+
 export type RecordingState =
-  | 'idle'
-  | 'requesting'
-  | 'recording'
-  | 'transcribing'
-  | 'error';
+  'idle' | 'requesting' | 'recording' | 'transcribing' | 'error';
 
 export type SpeechErrorKind =
   | 'unsupported'
@@ -49,9 +47,11 @@ export interface TranscriptionProgress {
 // A source of transcripts. The mock needs no download; the Whisper provider is
 // lazy-loaded and runs locally in the browser.
 export interface TranscriptionProvider {
-  readonly id: string;
+  readonly id: SpeechProviderMode;
   isSupported(): boolean;
-  initialize(onProgress?: (progress: TranscriptionProgress) => void): Promise<void>;
+  initialize(
+    onProgress?: (progress: TranscriptionProgress) => void,
+  ): Promise<void>;
   transcribe(
     audio: Blob,
     onProgress?: (progress: TranscriptionProgress) => void,

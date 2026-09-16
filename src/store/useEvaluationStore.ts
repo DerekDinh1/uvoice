@@ -5,6 +5,7 @@ import type { EvaluationResult } from '../types/evaluation';
 import { STORAGE_KEYS, SCHEMA_VERSIONS } from '../config';
 import { createLLMProvider } from '../lib/llm';
 import { runEvaluation, EvaluationError } from '../services/evaluator';
+import { computeProfileSignature } from '../lib/signature';
 import { useSettingsStore } from './useSettingsStore';
 
 export type EvaluationStatus = 'idle' | 'evaluating' | 'ready' | 'error';
@@ -12,6 +13,10 @@ export type EvaluationStatus = 'idle' | 'evaluating' | 'ready' | 'error';
 interface EvaluationStore {
   sample: string | null;
   result: EvaluationResult | null;
+  // A signature of the profile the result was scored against, so callers can
+  // tell when it has gone stale relative to the current profile (an edit,
+  // re-analysis, or restore since this evaluation ran).
+  profileSignature: string | null;
   status: EvaluationStatus;
   error: string | null;
   evaluate: (profile: StyleProfile) => Promise<void>;
@@ -25,6 +30,7 @@ export const useEvaluationStore = create<EvaluationStore>()(
     (set) => ({
       sample: null,
       result: null,
+      profileSignature: null,
       status: 'idle',
       error: null,
 
@@ -34,7 +40,12 @@ export const useEvaluationStore = create<EvaluationStore>()(
         const provider = createLLMProvider(analysisMode, { apiKey });
         try {
           const { sample, result } = await runEvaluation(profile, provider);
-          set({ sample, result, status: 'ready' });
+          set({
+            sample,
+            result,
+            profileSignature: computeProfileSignature(profile),
+            status: 'ready',
+          });
         } catch (caught) {
           set({
             status: 'error',
@@ -47,16 +58,24 @@ export const useEvaluationStore = create<EvaluationStore>()(
       },
 
       reset: () =>
-        set({ sample: null, result: null, status: 'idle', error: null }),
+        set({
+          sample: null,
+          result: null,
+          profileSignature: null,
+          status: 'idle',
+          error: null,
+        }),
     }),
     {
       name: STORAGE_KEYS.evaluation,
       version: SCHEMA_VERSIONS.evaluation,
       storage: createJSONStorage(() => localStorage),
-      // Persist the sample and result only; status and error are per-session.
+      // Persist the sample, result, and profile signature; status and error
+      // are per-session.
       partialize: (state) => ({
         sample: state.sample,
         result: state.result,
+        profileSignature: state.profileSignature,
       }),
     },
   ),

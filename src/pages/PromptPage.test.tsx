@@ -1,10 +1,12 @@
-import { beforeEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { PromptPage } from './PromptPage';
 import { useAnalysisStore } from '../store/useAnalysisStore';
 import { useEvaluationStore } from '../store/useEvaluationStore';
+import { computeProfileSignature } from '../lib/signature';
 import type { StyleProfile } from '../types/styleProfile';
+import type { EvaluationResult } from '../types/evaluation';
 
 const sampleProfile: StyleProfile = {
   voice: ['Direct'],
@@ -37,6 +39,13 @@ const sampleProfile: StyleProfile = {
   avoid: ['filler'],
 };
 
+const sampleResult: EvaluationResult = {
+  overallScore: 82,
+  dimensions: [{ name: 'Tone', score: 80, feedback: 'Close match.' }],
+  issues: ['Too many adjectives.'],
+  recommendations: ['Trim adjectives.'],
+};
+
 function renderPage() {
   return render(
     <MemoryRouter>
@@ -44,6 +53,9 @@ function renderPage() {
     </MemoryRouter>,
   );
 }
+
+const originalCreateObjectURL = URL.createObjectURL;
+const originalRevokeObjectURL = URL.revokeObjectURL;
 
 beforeEach(() => {
   localStorage.clear();
@@ -56,9 +68,15 @@ beforeEach(() => {
   useEvaluationStore.setState({
     sample: null,
     result: null,
+    profileSignature: null,
     status: 'idle',
     error: null,
   });
+});
+
+afterEach(() => {
+  URL.createObjectURL = originalCreateObjectURL;
+  URL.revokeObjectURL = originalRevokeObjectURL;
 });
 
 describe('PromptPage', () => {
@@ -121,6 +139,44 @@ describe('PromptPage', () => {
     );
   });
 
+  it('shows an alert instead of failing silently when the clipboard write rejects', async () => {
+    useAnalysisStore.setState({
+      profile: sampleProfile,
+      profileSignature: 'sig',
+      status: 'ready',
+      error: null,
+    });
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+    Object.assign(navigator, { clipboard: { writeText } });
+
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Copy system prompt' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent).toContain('Could not copy');
+    });
+    expect(
+      screen.getByRole('button', { name: 'Copy system prompt' }).textContent,
+    ).toBe('Copy');
+  });
+
+  it('shows an alert instead of failing silently when there is no Clipboard API', async () => {
+    useAnalysisStore.setState({
+      profile: sampleProfile,
+      profileSignature: 'sig',
+      status: 'ready',
+      error: null,
+    });
+    Object.assign(navigator, { clipboard: undefined });
+
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Copy system prompt' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent).toContain('Could not copy');
+    });
+  });
+
   it('shows the evaluate control when a profile exists', () => {
     useAnalysisStore.setState({
       profile: sampleProfile,
@@ -134,5 +190,73 @@ describe('PromptPage', () => {
     expect(
       screen.getByRole('button', { name: 'Generate a sample and score it' }),
     ).toBeTruthy();
+  });
+
+  it('renders a persisted evaluation even though status resets to idle on reload', () => {
+    useAnalysisStore.setState({
+      profile: sampleProfile,
+      profileSignature: 'sig',
+      status: 'ready',
+      error: null,
+    });
+    // Simulates a reload: sample and result survived persistence, but status
+    // (never persisted) is back to its default.
+    useEvaluationStore.setState({
+      sample: 'A generated sample.',
+      result: sampleResult,
+      profileSignature: computeProfileSignature(sampleProfile),
+      status: 'idle',
+      error: null,
+    });
+
+    renderPage();
+
+    expect(screen.getByText('A generated sample.')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Overall match' })).toBeTruthy();
+    expect(screen.getByText('Tone')).toBeTruthy();
+  });
+
+  it('downloads the generated system prompt', () => {
+    useAnalysisStore.setState({
+      profile: sampleProfile,
+      profileSignature: 'sig',
+      status: 'ready',
+      error: null,
+    });
+    const createObjectURL = vi.fn(() => 'blob:mock-url');
+    URL.createObjectURL = createObjectURL;
+    URL.revokeObjectURL = vi.fn();
+
+    renderPage();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Download system prompt' }),
+    );
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByRole('button', { name: 'Download system prompt' })
+        .textContent,
+    ).toBe('Downloaded');
+  });
+
+  it('shows an alert instead of failing silently when the download fails', () => {
+    useAnalysisStore.setState({
+      profile: sampleProfile,
+      profileSignature: 'sig',
+      status: 'ready',
+      error: null,
+    });
+    URL.createObjectURL = vi.fn(() => {
+      throw new Error('boom');
+    });
+
+    renderPage();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Download system prompt' }),
+    );
+
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Could not download',
+    );
   });
 });

@@ -74,6 +74,19 @@ describe('ProfilePage', () => {
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
   });
 
+  it('moves focus to the editor heading when entering edit mode', () => {
+    // ProfileView and ProfileEditor are different trees swapped within the
+    // same route, so the route-based focus manager never fires for this
+    // transition; the editor has to move focus itself.
+    render(<ProfilePage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit profile' }));
+
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { name: 'Edit profile' }),
+    );
+  });
+
   it('saves a changed score and a new tag to the store', () => {
     render(<ProfilePage />);
 
@@ -96,6 +109,10 @@ describe('ProfilePage', () => {
     expect(state.profileSignature).toBe('sig');
     // Back on the read view.
     expect(screen.getByRole('heading', { name: 'Profile' })).toBeTruthy();
+    // Focus returns to the button that opened the editor, not <body>.
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Edit profile' }),
+    );
   });
 
   it('discards changes on Cancel', () => {
@@ -110,6 +127,10 @@ describe('ProfilePage', () => {
     expect(useAnalysisStore.getState().profile?.directness).toBe(80);
     expect(screen.getByRole('heading', { name: 'Profile' })).toBeTruthy();
     expect(screen.getByText('80')).toBeTruthy();
+    // Focus returns to the button that opened the editor, not <body>.
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Edit profile' }),
+    );
   });
 
   describe('re-analyze and history', () => {

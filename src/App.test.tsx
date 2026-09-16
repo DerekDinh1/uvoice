@@ -27,4 +27,30 @@ describe('App shell', () => {
       expect(document.activeElement?.id).toBe('main-content');
     });
   });
+
+  it('has a skip link targeting the main content region', () => {
+    render(<App />);
+    const skipLink = screen.getByRole('link', {
+      name: 'Skip to main content',
+    });
+    expect(skipLink.getAttribute('href')).toBe('#main-content');
+
+    fireEvent.click(skipLink);
+    expect(document.activeElement?.id).toBe('main-content');
+  });
+
+  it('closes the mobile nav on Escape and returns focus to the toggle', () => {
+    render(<App />);
+    const toggle = screen.getByRole('button', { name: 'Open menu' });
+
+    fireEvent.click(toggle);
+    expect(screen.getByRole('button', { name: 'Close menu' })).toBeTruthy();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(screen.queryByRole('button', { name: 'Close menu' })).toBeNull();
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Open menu' }),
+    );
+  });
 });

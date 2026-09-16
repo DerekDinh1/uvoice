@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalysisStore } from '../store/useAnalysisStore';
 import { ROUTES } from '../config';
@@ -16,6 +16,23 @@ export function ProfilePage() {
   const profile = useAnalysisStore((state) => state.profile);
   const updateProfile = useAnalysisStore((state) => state.updateProfile);
   const [mode, setMode] = useState<Mode>('view');
+  const editButtonRef = useRef<HTMLButtonElement>(null);
+  // Set right before leaving edit mode so the effect below knows to send
+  // focus back to the "Edit profile" button (it is what opened the editor),
+  // rather than leaving it on <body> after ProfileEditor unmounts.
+  const returnFocusToEditButton = useRef(false);
+
+  useEffect(() => {
+    if (mode === 'view' && returnFocusToEditButton.current) {
+      returnFocusToEditButton.current = false;
+      editButtonRef.current?.focus();
+    }
+  }, [mode]);
+
+  function exitEditMode() {
+    returnFocusToEditButton.current = true;
+    setMode('view');
+  }
 
   if (!profile) {
     return (
@@ -49,16 +66,20 @@ export function ProfilePage() {
         profile={profile}
         onSave={(updated) => {
           updateProfile(updated);
-          setMode('view');
+          exitEditMode();
         }}
-        onCancel={() => setMode('view')}
+        onCancel={exitEditMode}
       />
     );
   }
 
   return (
     <div className="space-y-8">
-      <ProfileView profile={profile} onEdit={() => setMode('edit')} />
+      <ProfileView
+        profile={profile}
+        onEdit={() => setMode('edit')}
+        editButtonRef={editButtonRef}
+      />
       <ReanalyzeControl />
       <VersionHistoryPanel />
     </div>

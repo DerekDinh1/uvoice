@@ -41,5 +41,5 @@ export function buildAnalysisPrompt(samples: WritingSample[]): LLMRequest {
     )
     .join('\n\n');
 
-  return { system, user, purpose: 'analysis' };
+  return { system, user, purpose: 'analysis', responseFormat: 'json' };
 }

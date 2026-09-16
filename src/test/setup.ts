@@ -47,3 +47,9 @@ if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
     dispatchEvent: () => false,
   })) as typeof window.matchMedia;
 }
+
+// jsdom defines window.scrollTo as a function that throws 'Not implemented';
+// the version-restore flow calls it. Override with a no-op so tests stay quiet.
+if (typeof window !== 'undefined') {
+  window.scrollTo = (() => {}) as typeof window.scrollTo;
+}

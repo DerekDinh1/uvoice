@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import type { StyleProfile } from '../../types/styleProfile';
 import { STYLE_DIMENSIONS } from '../../types/styleProfile';
 import { buttonClass } from '../ui/buttonStyles';
@@ -7,11 +8,18 @@ import { TagList } from './TagList';
 interface ProfileViewProps {
   profile: StyleProfile;
   onEdit: () => void;
+  // Lets ProfilePage return focus here after edit mode is left (Save or
+  // Cancel), since it is the button that opened it.
+  editButtonRef?: RefObject<HTMLButtonElement>;
 }
 
 // Read-only render of the generated writing-style profile, plus the entry
 // point into edit mode. Editing itself lives in ProfileEditor.
-export function ProfileView({ profile, onEdit }: ProfileViewProps) {
+export function ProfileView({
+  profile,
+  onEdit,
+  editButtonRef,
+}: ProfileViewProps) {
   return (
     <section className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -25,6 +33,7 @@ export function ProfileView({ profile, onEdit }: ProfileViewProps) {
           </p>
         </div>
         <button
+          ref={editButtonRef}
           type="button"
           onClick={onEdit}
           className={buttonClass('secondary')}

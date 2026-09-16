@@ -9,7 +9,9 @@
   --surface-2: #e7e6df;
   --border: #e1e0d8;
   --text: #2a2822;
-  --muted: #6c695f;
+  /* Darkened from #6c695f so muted text clears AA (4.5:1) on --surface-2, not
+     just on --bg/--surface. Dark mode's --muted already passes and is unchanged. */
+  --muted: #5f5c52;
   --accent: #2c2823;
   --accent-fg: #faf9f5;
   --success-bg: #e7f1e9;

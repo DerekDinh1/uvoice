@@ -1,12 +1,12 @@
 import { useAppStore } from '../../store/useAppStore';
 import { QUESTIONS } from '../../data/questions';
+import { resetSession } from '../../lib/resetSession';
 import { buttonClass } from '../ui/buttonStyles';
 
 export function AssessmentNav() {
   const currentIndex = useAppStore((state) => state.currentIndex);
   const next = useAppStore((state) => state.next);
   const previous = useAppStore((state) => state.previous);
-  const restartAssessment = useAppStore((state) => state.restartAssessment);
 
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === QUESTIONS.length - 1;
@@ -14,10 +14,10 @@ export function AssessmentNav() {
   const handleRestart = () => {
     if (
       window.confirm(
-        'Restart the assessment? This permanently clears all your answers.',
+        'Restart the assessment? This permanently clears your answers, your profile, and your latest results.',
       )
     ) {
-      restartAssessment();
+      resetSession();
     }
   };
 

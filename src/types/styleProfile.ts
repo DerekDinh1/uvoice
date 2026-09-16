@@ -1,13 +1,5 @@
 import { z } from 'zod';
-
-// Scores use a documented 0..100 scale: 0 = very low, 50 = moderate, 100 = very
-// high. Model output is coerced and clamped so an out-of-range or stringified
-// number never breaks the profile.
-const score = z.coerce
-  .number()
-  .transform((n) =>
-    Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : 0,
-  );
+import { score } from './score';
 
 export const styleProfileSchema = z.object({
   voice: z.array(z.string()),
@@ -49,6 +41,13 @@ export const styleProfileSchema = z.object({
 
 export type StyleProfile = z.infer<typeof styleProfileSchema>;
 
+// Keys of StyleProfile whose value is a number, i.e. every score dimension.
+// Lets STYLE_DIMENSIONS (and anything typed against it) reference only a
+// numeric field, without a runtime-unsafe `as number` cast at each use site.
+export type NumericStyleProfileKey = {
+  [K in keyof StyleProfile]: StyleProfile[K] extends number ? K : never;
+}[keyof StyleProfile];
+
 // The numeric dimensions, in display order. Used by the profile UI (Phase 4) and
 // the prompt generator (Phase 5) so the set of scores is defined in one place.
 export const STYLE_DIMENSIONS = [
@@ -60,12 +59,12 @@ export const STYLE_DIMENSIONS = [
   { key: 'empathy', label: 'Empathy' },
   { key: 'hedging', label: 'Hedging' },
 ] as const satisfies ReadonlyArray<{
-  key: keyof StyleProfile;
+  key: NumericStyleProfileKey;
   label: string;
 }>;
 
 export interface StyleDimension {
-  key: keyof StyleProfile;
+  key: NumericStyleProfileKey;
   label: string;
   score: number;
 }

@@ -33,7 +33,14 @@ export class OpenAILLMProvider implements LLMProvider {
             { role: 'system', content: request.system },
             { role: 'user', content: request.user },
           ],
-          response_format: { type: 'json_object' },
+          // Undefined is dropped by JSON.stringify, so a 'text' request omits
+          // response_format entirely rather than forcing JSON mode on a prose
+          // task (which the API rejects). Undefined responseFormat is treated
+          // as 'json' to match the historical default.
+          response_format:
+            request.responseFormat === 'text'
+              ? undefined
+              : { type: 'json_object' },
           temperature: 0.4,
         }),
       });
