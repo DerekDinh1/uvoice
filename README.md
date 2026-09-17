@@ -11,9 +11,9 @@ Uvoice interviews you with a short set of writing exercises, analyzes
 your natural style, and generates a Markdown system prompt you can hand to any AI
 assistant so its replies sound like you. Everything runs in the browser.
 
-> **Status:** built in reviewed phases. The assessment, local voice input, style
-> analysis, the editable profile, and prompt generation are live today.
-> Evaluation and polish are on the [roadmap](#-roadmap) below.
+> **Status:** built in reviewed phases, and the full loop is live. You can run the
+> assessment, use local voice input, analyze your style, edit the profile, generate
+> a prompt, score a sample against it, and refine. See the [roadmap](#-roadmap) below.
 
 ## ✨ Highlights
 
@@ -21,8 +21,10 @@ assistant so its replies sound like you. Everything runs in the browser.
   one question at a time, with progress that survives a refresh.
 - **Runs entirely in your browser.** Static single-page app, free to host on
   GitHub Pages, no backend.
-- **Bring your own key, or don't.** A mock mode will let the whole flow work with
+- **Bring your own key, or don't.** A mock mode lets the whole flow work with
   no API key; live mode uses your own key, kept in memory by default.
+- **Test and refine.** Score a fresh writing sample against your prompt, then
+  re-run the analysis and keep a version history you can compare and restore.
 - **Speak or type.** Answer out loud and the words are transcribed on your own
   device with an open-source Whisper model. Your audio is never uploaded.
 - **Light and dark themes.** A soft, warm light mode and a matching dark mode,
@@ -101,6 +103,8 @@ in for tests and demos and real providers slot in without touching the UI.
 
 ## 🌐 Deployment
 
+**Live at [derekdinh1.github.io/uvoice](https://derekdinh1.github.io/uvoice/).**
+
 Pushing to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml),
 which lints, tests, builds, and deploys `dist/` to GitHub Pages. Enable it once
 under **Settings → Pages → Source: GitHub Actions**. The Vite `base` is `/uvoice/`
@@ -116,10 +120,10 @@ renamed.
 - Phase 3: Style Analysis [COMPLETE]
 - Phase 4: Style Profile UI [COMPLETE]
 - Phase 5: Prompt Generator [COMPLETE]
-- Phase 6: Evaluation Loop [PLANNED]
-- Phase 7: Refinement [PLANNED]
-- Phase 8: Production Polish [PLANNED]
-- Phase 9: GitHub Pages Deployment [PLANNED]
+- Phase 6: Evaluation Loop [COMPLETE]
+- Phase 7: Refinement [COMPLETE]
+- Phase 8: Production Polish [COMPLETE]
+- Phase 9: GitHub Pages Deployment [COMPLETE]
 
 Beyond the MVP: a serverless API proxy and expansion toward a broader "Voiceprint"
 platform.
